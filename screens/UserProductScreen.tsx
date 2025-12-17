@@ -22,6 +22,7 @@ interface PendingAction {
 
 export default function UserProductScreen({ navigation }: { navigation: any }) {
     const { products, updateProductQuantity, logout } = useInventory();
+    const activeProducts = products.filter((p: any) => p.isActive !== false);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [useAmount, setUseAmount] = useState('');
 
@@ -32,7 +33,7 @@ export default function UserProductScreen({ navigation }: { navigation: any }) {
     const [restockMode, setRestockMode] = useState(false);
     const [restockAmount, setRestockAmount] = useState('');
 
-    if (!products || products.length === 0) {
+    if (!activeProducts || activeProducts.length === 0) {
         return (
             <View className="flex-1 bg-[#f5f5f5] justify-center items-center">
                 <Text className="text-2xl font-bold text-[#333]">Cargando productos...</Text>
@@ -40,7 +41,7 @@ export default function UserProductScreen({ navigation }: { navigation: any }) {
         );
     }
 
-    const product = products[currentIndex];
+    const product = activeProducts[currentIndex];
 
     // Helper to log actions
     const addToLog = (actionType: 'used' | 'restocked', amount: number, initialQty: number, finalQty: number) => {
@@ -157,7 +158,7 @@ export default function UserProductScreen({ navigation }: { navigation: any }) {
 
     const navigate = (direction: 'next' | 'prev') => {
         if (direction === 'next') {
-            if (currentIndex < products.length - 1) {
+            if (currentIndex < activeProducts.length - 1) {
                 setCurrentIndex(currentIndex + 1);
                 setUseAmount('');
             } else {
@@ -184,7 +185,7 @@ export default function UserProductScreen({ navigation }: { navigation: any }) {
                 <TouchableOpacity onPress={handleCancel} className="p-2.5">
                     <Text className="text-lg text-[#FF6B6B] font-bold">Cancelar</Text>
                 </TouchableOpacity>
-                <Text className="text-lg text-[#666]">Producto {currentIndex + 1} de {products.length}</Text>
+                <Text className="text-lg text-[#666]">Producto {currentIndex + 1} de {activeProducts.length}</Text>
             </View>
 
             <ScrollView contentContainerStyle={{ padding: 20, alignItems: 'center' }}>
@@ -220,8 +221,9 @@ export default function UserProductScreen({ navigation }: { navigation: any }) {
                         {(product.history || []).map((item, index) => {
                             const { fullDate, time } = formatDate(item.timestamp);
                             return (
-                                <View key={index} className="flex-row justify-between py-1.5 border-b border-[#ccc]">
-                                    <Text className="text-sm text-[#666]">{fullDate} - {time}</Text>
+                            return (
+                                <View key={index} className="flex-col py-2 border-b border-[#ccc]">
+                                    <Text className="text-sm text-[#666] mb-1">{fullDate} - {time}</Text>
                                     <Text className="text-base text-[#333] font-medium">
                                         {item.amount && item.amount < 0 ? `Restaste ${Math.abs(item.amount)}` : `Agregaste ${item.amount}`}
                                     </Text>
@@ -246,7 +248,7 @@ export default function UserProductScreen({ navigation }: { navigation: any }) {
                     onPress={handleNext}
                 >
                     <Text className="text-xl font-bold text-[#333] text-center">
-                        {useAmount ? 'Check y Siguiente' : (currentIndex === products.length - 1 ? 'Terminar' : 'Siguiente')}
+                        {useAmount ? 'Check y Siguiente' : (currentIndex === activeProducts.length - 1 ? 'Terminar' : 'Siguiente')}
                     </Text>
                 </TouchableOpacity>
             </View>

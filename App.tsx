@@ -16,10 +16,21 @@ import SummaryScreen from './screens/SummaryScreen';
 import { StatusBar } from 'expo-status-bar';
 import { View, Platform } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import * as NavigationBar from 'expo-navigation-bar';
 
 const Stack = createStackNavigator();
 
 export default function App() {
+  React.useEffect(() => {
+    async function configureNavigationBar() {
+      if (Platform.OS === 'android') {
+        await NavigationBar.setVisibilityAsync("hidden");
+        await NavigationBar.setBehaviorAsync("overlay-swipe");
+      }
+    }
+    configureNavigationBar();
+  }, []);
+
   return (
     <InventoryProvider>
       <View className="flex-1 bg-[#333] items-center justify-center">

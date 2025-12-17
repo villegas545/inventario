@@ -14,6 +14,7 @@
     "@react-navigation/native": "^7.1.25",
     "@react-navigation/stack": "^7.6.12",
     "expo": "~54.0.29",
+    "expo-navigation-bar": "~5.0.10",
     "expo-status-bar": "~3.0.9",
     "firebase": "^12.7.0",
     "nativewind": "^4.2.1",
