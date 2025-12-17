@@ -33,7 +33,7 @@ export interface Product {
     description: string;
     quantity: number;
     unit: string;
-    image: string;
+
     history: HistoryItem[];
     isActive?: boolean;
     [key: string]: any; // Allow dynamic access for updates
@@ -144,8 +144,10 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
             // Seed Products
             initialData.products.forEach((product: any) => {
                 const docRef = doc(collection(db, 'products'));
+                // Destructure to omit 'image' if it exists in initialData.products
+                const { image, ...productWithoutImage } = product;
                 batch.set(docRef, {
-                    ...product,
+                    ...productWithoutImage,
                     // Ensure ID is not part of the data field if we rely on doc.id, 
                     // but keeping it for consistency if needed, or better, let Firestore handle ID.
                     // We will remove 'id' from the data payload and let doc.id be the source of truth.
@@ -196,7 +198,8 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
         const product = products.find(p => p.id === id);
         if (!product) return;
 
-        const { quantity, history, ...safeUpdates } = updates;
+        // Destructure to omit 'image' from updates if it's passed
+        const { quantity, history, image, ...safeUpdates } = updates;
         const changedFields = Object.keys(safeUpdates).filter(key => safeUpdates[key] !== product[key]);
 
         if (changedFields.length > 0) {
@@ -224,8 +227,10 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
 
     const addNewProduct = async (product: any) => {
         try {
+            // Destructure to omit 'image' if it exists in the product object being added
+            const { image, ...productWithoutImage } = product;
             const docRef = await addDoc(collection(db, 'products'), {
-                ...product,
+                ...productWithoutImage,
                 history: []
             });
             return docRef.id;

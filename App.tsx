@@ -15,6 +15,7 @@ import AddProductScreen from './screens/AddProductScreen';
 import SummaryScreen from './screens/SummaryScreen';
 import { StatusBar } from 'expo-status-bar';
 import { View, Platform } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 const Stack = createStackNavigator();
 
@@ -26,23 +27,27 @@ export default function App() {
           className="flex-1 w-full h-full bg-white overflow-hidden shadow-xl"
           style={Platform.OS === 'web' ? { maxWidth: 480, maxHeight: 900 } : {}}
         >
-          <NavigationContainer>
-            <StatusBar style="dark" />
-            <Stack.Navigator
-              initialRouteName="Login"
-              screenOptions={{ headerShown: false }}
-            >
-              <Stack.Screen name="Login" component={LoginScreen} />
-              <Stack.Screen name="Dashboard" component={DashboardScreen} />
-              <Stack.Screen name="UserProduct" component={UserProductScreen} />
-              <Stack.Screen name="Restock" component={RestockScreen} />
-              <Stack.Screen name="Inventory" component={InventoryScreen} />
-              <Stack.Screen name="History" component={HistoryScreen} />
-              <Stack.Screen name="ProductHistory" component={ProductHistoryScreen} />
-              <Stack.Screen name="AddProduct" component={AddProductScreen} />
-              <Stack.Screen name="Summary" component={SummaryScreen} />
-            </Stack.Navigator>
-          </NavigationContainer>
+          <SafeAreaProvider>
+            <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
+              <NavigationContainer>
+                <StatusBar style="dark" />
+                <Stack.Navigator
+                  initialRouteName="Login"
+                  screenOptions={{ headerShown: false }}
+                >
+                  <Stack.Screen name="Login" component={LoginScreen} />
+                  <Stack.Screen name="Dashboard" component={DashboardScreen} />
+                  <Stack.Screen name="UserProduct" component={UserProductScreen} />
+                  <Stack.Screen name="Restock" component={RestockScreen} />
+                  <Stack.Screen name="Inventory" component={InventoryScreen} />
+                  <Stack.Screen name="History" component={HistoryScreen} />
+                  <Stack.Screen name="ProductHistory" component={ProductHistoryScreen} />
+                  <Stack.Screen name="AddProduct" component={AddProductScreen} />
+                  <Stack.Screen name="Summary" component={SummaryScreen} />
+                </Stack.Navigator>
+              </NavigationContainer>
+            </SafeAreaView>
+          </SafeAreaProvider>
         </View>
       </View>
     </InventoryProvider>

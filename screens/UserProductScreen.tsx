@@ -188,11 +188,7 @@ export default function UserProductScreen({ navigation }: { navigation: any }) {
             </View>
 
             <ScrollView contentContainerStyle={{ padding: 20, alignItems: 'center' }}>
-                <Image
-                    source={{ uri: product.image }}
-                    className="w-[150px] h-[150px] mb-2.5"
-                    resizeMode="contain"
-                />
+
 
                 <Text className="text-3xl font-bold text-black text-center mb-1.5">{product.name}</Text>
                 <Text className="text-lg text-[#555] text-center mb-5 px-2.5 italic">{product.description}</Text>

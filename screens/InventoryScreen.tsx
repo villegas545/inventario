@@ -13,7 +13,7 @@ export default function InventoryScreen({ navigation }: { navigation: any }) {
         name: '',
         description: '',
         unit: '',
-        image: ''
+        // image: '' - Removed
     });
 
     const filteredProducts = products.filter((p: any) =>
@@ -26,7 +26,7 @@ export default function InventoryScreen({ navigation }: { navigation: any }) {
             name: product.name,
             description: product.description || '',
             unit: product.unit,
-            image: product.image
+            // image: product.image - Removed
         });
         setEditModalVisible(true);
     };
@@ -83,7 +83,7 @@ export default function InventoryScreen({ navigation }: { navigation: any }) {
             onPress={() => navigation.navigate('ProductHistory', { productId: item.id })}
             activeOpacity={0.7}
         >
-            <Image source={{ uri: item.image }} className="w-[60px] h-[60px] rounded-full mr-4 bg-[#eee]" />
+
             <View className="flex-1 pr-2.5">
                 <Text className="text-lg font-bold text-[#333] mb-1">{item.name}</Text>
                 <Text className="text-sm text-[#888] mb-1" numberOfLines={1}>{item.description}</Text>
@@ -176,12 +176,7 @@ export default function InventoryScreen({ navigation }: { navigation: any }) {
                                 onChangeText={(t) => setEditForm({ ...editForm, unit: t })}
                             />
 
-                            <Text className="text-base text-[#666] mb-1.5 font-semibold">URL de Imagen</Text>
-                            <TextInput
-                                className="bg-[#f9f9f9] border border-[#ddd] rounded-xl p-3 text-base mb-4"
-                                value={editForm.image}
-                                onChangeText={(t) => setEditForm({ ...editForm, image: t })}
-                            />
+
 
                             <View className="flex-row gap-4 mt-2">
                                 <TouchableOpacity

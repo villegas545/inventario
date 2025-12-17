@@ -47,7 +47,7 @@ export default function RestockScreen({ navigation }: { navigation: any }) {
             className="bg-white rounded-xl p-4 mb-4 flex-row items-center shadow-sm"
             onPress={() => handleSelect(item)}
         >
-            <Image source={{ uri: item.image }} className="w-[50px] h-[50px] rounded-full mr-4 bg-[#eee]" />
+
             <View className="flex-1">
                 <Text className="text-lg font-bold text-[#333]">{item.name}</Text>
                 <Text className="text-sm text-[#888]">Hay: {item.quantity} {item.unit}</Text>

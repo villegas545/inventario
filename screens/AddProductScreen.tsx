@@ -9,8 +9,8 @@ export default function AddProductScreen({ navigation }: { navigation: any }) {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [unit, setUnit] = useState('');
-    const [image, setImage] = useState('https://via.placeholder.com/150'); // Default image
     const [initialQty, setInitialQty] = useState('');
+
     const [isSaving, setIsSaving] = useState(false);
 
     const handleSave = async () => {
@@ -32,7 +32,6 @@ export default function AddProductScreen({ navigation }: { navigation: any }) {
                 name,
                 description,
                 unit,
-                image,
                 quantity: qty
             };
 
@@ -47,7 +46,7 @@ export default function AddProductScreen({ navigation }: { navigation: any }) {
             setDescription('');
             setUnit('');
             setInitialQty('');
-            setImage('https://via.placeholder.com/150');
+
 
         } catch (error) {
             Alert.alert("❌ Error", "No se pudo guardar el producto. Verifica tu conexión e inténtalo de nuevo.");
@@ -100,13 +99,7 @@ export default function AddProductScreen({ navigation }: { navigation: any }) {
                     keyboardType="numeric"
                 />
 
-                <Text className="text-base font-bold text-[#333] mb-1.5 mt-4">URL de Imagen (Opcional)</Text>
-                <TextInput
-                    className="bg-white border border-[#ddd] rounded-xl p-4 text-base"
-                    value={image}
-                    onChangeText={setImage}
-                    placeholder="https://..."
-                />
+
 
                 <TouchableOpacity
                     className={`p-5 rounded-2xl items-center mt-8 shadow-md ${isSaving ? 'bg-[#aaccce] opacity-70' : 'bg-[#4ECDC4]'}`}
