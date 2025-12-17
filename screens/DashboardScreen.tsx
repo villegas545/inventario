@@ -46,6 +46,14 @@ export default function DashboardScreen({ navigation }: { navigation: any }) {
             target: "AddProduct",
             color: "#ff9ff3", // Pink
             roles: ['admin'] // ADMIN only
+        },
+        {
+            icon: "🗑️",
+            title: "Papelera",
+            subtitle: "Restaurar o eliminar",
+            target: "InactiveProducts",
+            color: "#636e72", // Gray
+            roles: ['admin'] // ADMIN only
         }
     ];
 

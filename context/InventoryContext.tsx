@@ -11,7 +11,8 @@ import {
     writeBatch,
     where,
     query,
-    getDocs
+    getDocs,
+    deleteDoc
 } from 'firebase/firestore';
 import { initialData } from '../data/initialData';
 import initialUsers from '../data/users.json';
@@ -225,6 +226,23 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
         await updateProductHistory(id, { isActive: false }, historyItem);
     };
 
+    const restoreProduct = async (id: string) => {
+        const historyItem = createHistoryItem('details_edit', {
+            changes: ['Producto restaurado']
+        });
+
+        await updateProductHistory(id, { isActive: true }, historyItem);
+    };
+
+    const permanentDeleteProduct = async (id: string) => {
+        try {
+            await deleteDoc(doc(db, 'products', id));
+        } catch (e) {
+            console.error("Error deleting product permanently: ", e);
+            throw e;
+        }
+    };
+
     const addNewProduct = async (product: any) => {
         try {
             // Destructure to omit 'image' if it exists in the product object being added
@@ -282,6 +300,8 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
             updateProductDetails,
             addNewProduct,
             deleteProduct,
+            restoreProduct,
+            permanentDeleteProduct,
             login,
             logout,
             loading
