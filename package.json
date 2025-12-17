@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "seed:products": "ts-node seed_products.ts"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",
@@ -34,6 +35,8 @@
   "devDependencies": {
     "@types/react": "~19.1.0",
     "babel-preset-expo": "^54.0.8",
+    "dotenv": "^17.2.3",
+    "ts-node": "^10.9.2",
     "typescript": "~5.9.2"
   },
   "private": true

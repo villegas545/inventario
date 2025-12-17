@@ -1,0 +1,20 @@
+[
+    {
+        "name": "Coca Cola 600ml",
+        "description": "Refresco de cola botella de plástico",
+        "quantity": 50,
+        "unit": "botellas"
+    },
+    {
+        "name": "Sabritas Sal",
+        "description": "Papas fritas clásicas 45g",
+        "quantity": 20,
+        "unit": "bolsas"
+    },
+    {
+        "name": "Agua Ciel 1L",
+        "description": "Agua purificada natural",
+        "quantity": 100,
+        "unit": "botellas"
+    }
+]

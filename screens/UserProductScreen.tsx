@@ -221,7 +221,6 @@ export default function UserProductScreen({ navigation }: { navigation: any }) {
                         {(product.history || []).map((item, index) => {
                             const { fullDate, time } = formatDate(item.timestamp);
                             return (
-                            return (
                                 <View key={index} className="flex-col py-2 border-b border-[#ccc]">
                                     <Text className="text-sm text-[#666] mb-1">{fullDate} - {time}</Text>
                                     <Text className="text-base text-[#333] font-medium">
