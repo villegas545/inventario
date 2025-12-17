@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useInventory } from '../context/InventoryContext';
 
-export default function DashboardScreen({ navigation }) {
+export default function DashboardScreen({ navigation }: { navigation: any }) {
     const { products, currentUser, logout } = useInventory();
 
     const allMenuItems = [
@@ -12,7 +12,7 @@ export default function DashboardScreen({ navigation }) {
             title: "Registrar Trabajo",
             subtitle: "Capturar consumo diario",
             target: "UserProduct",
-            color: "#4ECDC4",
+            color: "#4ECDC4", // Teal
             roles: ['admin', 'user']
         },
         {
@@ -20,7 +20,7 @@ export default function DashboardScreen({ navigation }) {
             title: "Reponer Inventario",
             subtitle: "Agregar stock existente",
             target: "Restock",
-            color: "#FF6B6B",
+            color: "#FF6B6B", // Red
             roles: ['admin', 'user']
         },
         {
@@ -28,7 +28,7 @@ export default function DashboardScreen({ navigation }) {
             title: "Ver Inventario",
             subtitle: "Revisar lista completa",
             target: "Inventory",
-            color: "#FF9F43",
+            color: "#FF9F43", // Orange
             roles: ['admin', 'user']
         },
         {
@@ -36,7 +36,7 @@ export default function DashboardScreen({ navigation }) {
             title: "Ver Historial",
             subtitle: "Auditoría de movimientos",
             target: "History",
-            color: "#54a0ff",
+            color: "#54a0ff", // Blue
             roles: ['admin', 'user']
         },
         {
@@ -44,7 +44,7 @@ export default function DashboardScreen({ navigation }) {
             title: "Nuevo Producto",
             subtitle: "Crear item en catálogo",
             target: "AddProduct",
-            color: "#ff9ff3",
+            color: "#ff9ff3", // Pink
             roles: ['admin'] // ADMIN only
         }
     ];
@@ -62,144 +62,48 @@ export default function DashboardScreen({ navigation }) {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
+        <View className="flex-1 bg-[#f5f5f5]">
+            <View className="flex-row justify-between items-center p-8 pt-16 bg-[#333] rounded-b-[30px] shadow-lg">
                 <View>
-                    <Text style={styles.greeting}>Hola, {currentUser?.name || 'Usuario'}</Text>
-                    <Text style={styles.subGreeting}>
+                    <Text className="text-3xl font-bold text-white">Hola, {currentUser?.name || 'Usuario'}</Text>
+                    <Text className="text-base text-[#ddd] mt-1">
                         {currentUser?.role === 'admin' ? 'Panel de Control Maestro' : 'Panel de Encargada'}
                     </Text>
                 </View>
-                <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-                    <Text style={styles.logoutText}>Salir</Text>
+                <TouchableOpacity onPress={handleLogout} className="bg-white/20 py-2 px-4 rounded-full">
+                    <Text className="text-white font-bold">Salir</Text>
                 </TouchableOpacity>
             </View>
 
             <TouchableOpacity
-                style={styles.shortcuts}
+                className="m-5 bg-white p-5 rounded-2xl shadow-sm active:bg-gray-50"
                 onPress={() => navigation.navigate("Inventory")}
             >
-                <Text style={styles.summaryTitle}>Resumen Rápido</Text>
-                <Text style={styles.summaryText}>{products.length} productos registrados</Text>
+                <Text className="text-lg font-bold text-[#333]">Resumen Rápido</Text>
+                <Text className="text-sm text-[#666] mt-1">{products.length} productos registrados</Text>
             </TouchableOpacity>
 
             <FlatList
                 data={menuItems}
                 keyExtractor={(item) => item.title}
-                contentContainerStyle={styles.menuList}
+                contentContainerStyle={{ padding: 20 }}
                 renderItem={({ item }) => (
                     <TouchableOpacity
-                        style={[styles.menuItem, { borderLeftColor: item.color }]}
+                        className="bg-white mb-4 rounded-xl p-5 flex-row items-center border-l-[5px] shadow-sm active:bg-gray-50"
+                        style={{ borderLeftColor: item.color }}
                         onPress={() => navigation.navigate(item.target)}
                     >
-                        <View style={[styles.iconBox, { backgroundColor: item.color }]}>
-                            <Text style={styles.iconText}>{item.icon}</Text>
+                        <View className="w-12 h-12 rounded-full justify-center items-center mr-4" style={{ backgroundColor: item.color }}>
+                            <Text className="text-2xl">{item.icon}</Text>
                         </View>
-                        <View style={styles.menuInfo}>
-                            <Text style={styles.menuTitle}>{item.title}</Text>
-                            <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
+                        <View className="flex-1">
+                            <Text className="text-lg font-bold text-[#333]">{item.title}</Text>
+                            <Text className="text-sm text-[#888] mt-0.5">{item.subtitle}</Text>
                         </View>
-                        <Text style={styles.arrow}>→</Text>
+                        <Text className="text-2xl text-[#ccc] font-bold">→</Text>
                     </TouchableOpacity>
                 )}
             />
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f5f5f5',
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 30,
-        paddingTop: 60,
-        backgroundColor: '#333',
-        borderBottomLeftRadius: 30,
-        borderBottomRightRadius: 30,
-        elevation: 5,
-    },
-    greeting: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#fff',
-    },
-    subGreeting: {
-        fontSize: 16,
-        color: '#ddd',
-        marginTop: 5,
-    },
-    logoutButton: {
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        paddingVertical: 8,
-        paddingHorizontal: 15,
-        borderRadius: 20,
-    },
-    logoutText: {
-        color: '#fff',
-        fontWeight: 'bold',
-    },
-    shortcuts: {
-        margin: 20,
-        backgroundColor: '#fff',
-        padding: 20,
-        borderRadius: 20,
-        elevation: 2,
-    },
-    summaryTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    summaryText: {
-        fontSize: 14,
-        color: '#666',
-        marginTop: 5,
-    },
-    menuList: {
-        padding: 20,
-    },
-    menuItem: {
-        backgroundColor: '#fff',
-        marginBottom: 15,
-        borderRadius: 15,
-        padding: 20,
-        flexDirection: 'row',
-        alignItems: 'center',
-        elevation: 3,
-        borderLeftWidth: 5,
-    },
-    iconBox: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 15,
-    },
-    iconText: {
-        fontSize: 24,
-    },
-    menuInfo: {
-        flex: 1,
-    },
-    menuTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    menuSubtitle: {
-        fontSize: 14,
-        color: '#888',
-        marginTop: 2,
-    },
-    arrow: {
-        fontSize: 24,
-        color: '#ccc',
-        fontWeight: 'bold',
-    },
-});

@@ -1,17 +1,17 @@
 
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Modal } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Image, Modal } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
-import { useInventory } from '../context/InventoryContext';
+import { useInventory, Product, HistoryItem } from '../context/InventoryContext';
 
 // Locale is already configured in HistoryScreen.tsx or global file, 
 // but it doesn't hurt to ensure it's available or rely on the global configuration if possible.
 // For safety, we can re-ensure it here or assume singleton behavior.
 // LocaleConfig.locales['es'] ... (omitted if assumed loaded, but safer to include if generic)
 
-export default function ProductHistoryScreen({ navigation, route }) {
+export default function ProductHistoryScreen({ navigation, route }: { navigation: any, route: any }) {
     const { productId } = route.params;
-    const { products } = useInventory();
+    const { products } = useInventory() as { products: Product[] };
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [dateModalVisible, setDateModalVisible] = useState(false);
 
@@ -19,7 +19,7 @@ export default function ProductHistoryScreen({ navigation, route }) {
 
     if (!product) {
         return (
-            <View style={styles.container}>
+            <View className="flex-1 bg-[#f5f5f5] justify-center items-center">
                 <Text>Producto no encontrado</Text>
             </View>
         );
@@ -42,7 +42,7 @@ export default function ProductHistoryScreen({ navigation, route }) {
         return itemDate === selectedDate;
     });
 
-    const formatDate = (timestamp) => {
+    const formatDate = (timestamp: number) => {
         const date = new Date(timestamp);
         const dateOptions: Intl.DateTimeFormatOptions = {
             weekday: 'long',
@@ -59,54 +59,100 @@ export default function ProductHistoryScreen({ navigation, route }) {
         return { fullDate: capitalizedDate, time: timePart };
     };
 
-    const renderItem = ({ item }) => {
+    const renderItem = ({ item }: { item: HistoryItem }) => {
         const { fullDate, time } = formatDate(item.timestamp);
-        const isRestock = item.amount > 0;
 
-        return (
-            <View style={styles.card}>
-                <View style={styles.dateContainer}>
-                    <Text style={styles.dateText}>{fullDate}</Text>
-                    <Text style={styles.timeText}>{time}</Text>
+        if (item.type === 'details_edit') {
+            return (
+                <View className="bg-white rounded-2xl p-4 mb-4 shadow-sm">
+                    <View className="flex-row justify-between mb-2 pb-2 border-b border-[#eee] flex-wrap">
+                        <Text className="text-[#888] text-sm font-semibold">{fullDate}</Text>
+                        <Text className="text-[#aaa] text-sm">{time}</Text>
+                    </View>
+                    <View className="items-start">
+                        <Text className="text-lg font-bold text-[#F39C12]">
+                            Actualización de detalles
+                        </Text>
+                        <Text className="text-base text-[#555] mt-0.5">
+                            Modificado: {item.changes ? item.changes.join(', ') : 'Varios'}
+                        </Text>
+                        <Text className="text-xs text-[#999] mt-1 italic">Por: {item.user || 'Desconocido'}</Text>
+                    </View>
                 </View>
-                <View style={styles.infoContainer}>
-                    <Text style={[styles.actionText, isRestock ? styles.restock : styles.usage]}>
-                        {isRestock ? 'Agregaste' : 'Usaste'} {Math.abs(item.amount)} {product.unit}
+            );
+        }
+
+        if (item.type === 'edit') {
+            return (
+                <View className="bg-white rounded-2xl p-4 mb-4 shadow-sm">
+                    <View className="flex-row justify-between mb-2 pb-2 border-b border-[#eee] flex-wrap">
+                        <Text className="text-[#888] text-sm font-semibold">{fullDate}</Text>
+                        <Text className="text-[#aaa] text-sm">{time}</Text>
+                    </View>
+                    <View className="items-start">
+                        <Text className="text-lg font-bold text-[#FFA500]">
+                            Ajuste de inventario
+                        </Text>
+                        <Text className="text-base text-[#555] mt-0.5">
+                            De {item.previous} a {item.new} {product.unit}
+                        </Text>
+                        <Text className="text-xs text-[#999] mt-1 italic">Por: {item.user || 'Desconocido'}</Text>
+                    </View>
+                </View>
+            );
+        }
+
+        const isRestock = (item.amount || 0) > 0;
+        return (
+            <View className="bg-white rounded-2xl p-4 mb-4 shadow-sm">
+                <View className="flex-row justify-between mb-2 pb-2 border-b border-[#eee] flex-wrap">
+                    <Text className="text-[#888] text-sm font-semibold">{fullDate}</Text>
+                    <Text className="text-[#aaa] text-sm">{time}</Text>
+                </View>
+                <View className="items-start">
+                    <Text className={`text-lg font-bold ${isRestock ? 'text-[#4ECDC4]' : 'text-[#FF6B6B]'}`}>
+                        {isRestock ? 'Agregaste' : 'Usaste'} {Math.abs(item.amount || 0)} {product.unit}
                     </Text>
+                    {item.previous !== undefined && item.new !== undefined && (
+                        <Text className="text-base text-[#555] mt-0.5">
+                            De {item.previous} a {item.new} {product.unit}
+                        </Text>
+                    )}
+                    <Text className="text-xs text-[#999] mt-1 italic">Por: {item.user || 'Desconocido'}</Text>
                 </View>
             </View>
         );
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Text style={styles.backText}>← Volver</Text>
+        <View className="flex-1 bg-[#f5f5f5]">
+            <View className="flex-row items-center p-5 bg-white border-b border-[#ddd]">
+                <TouchableOpacity onPress={() => navigation.goBack()} className="p-2 mr-2">
+                    <Text className="text-lg text-[#666]">← Volver</Text>
                 </TouchableOpacity>
-                <Text style={styles.title} numberOfLines={1}>Historial: {product.name}</Text>
+                <Text className="text-xl font-bold text-[#333] flex-1" numberOfLines={1}>Historial: {product.name}</Text>
             </View>
 
-            <View style={styles.productSummary}>
-                <Image source={{ uri: product.image }} style={styles.image} />
+            <View className="flex-row items-center p-5 bg-[#eafbf9] border-b border-[#ddd]">
+                <Image source={{ uri: product.image }} className="w-16 h-16 rounded-full mr-5 bg-white" />
                 <View>
-                    <Text style={styles.currentStockLabel}>Stock Actual:</Text>
-                    <Text style={styles.currentStockValue}>{product.quantity} {product.unit}</Text>
+                    <Text className="text-sm text-[#666]">Stock Actual:</Text>
+                    <Text className="text-2xl font-bold text-[#333]">{product.quantity} {product.unit}</Text>
                 </View>
             </View>
 
             {uniqueDates.length > 0 && (
                 <>
                     <TouchableOpacity
-                        style={styles.dateFilterButton}
+                        className="flex-row items-center justify-center bg-[#eafbf9] mx-5 my-2 mb-2 p-4 rounded-xl border border-[#4ECDC4]"
                         onPress={() => setDateModalVisible(true)}
                     >
-                        <Text style={styles.dateFilterButtonText}>
+                        <Text className="text-base text-[#333] font-bold">
                             {selectedDate ? `📅 ${selectedDate}` : "📅 Filtrar por Fecha"}
                         </Text>
                         {selectedDate && (
-                            <TouchableOpacity onPress={() => setSelectedDate(null)} style={styles.clearDateBtn}>
-                                <Text style={styles.clearDateText}>✕</Text>
+                            <TouchableOpacity onPress={() => setSelectedDate(null)} className="ml-2 bg-[#FF6B6B] rounded-lg w-5 h-5 items-center justify-center">
+                                <Text className="text-white text-xs font-bold">✕</Text>
                             </TouchableOpacity>
                         )}
                     </TouchableOpacity>
@@ -117,18 +163,18 @@ export default function ProductHistoryScreen({ navigation, route }) {
                         visible={dateModalVisible}
                         onRequestClose={() => setDateModalVisible(false)}
                     >
-                        <View style={styles.modalOverlay}>
-                            <View style={styles.modalContent}>
-                                <View style={styles.modalHeader}>
-                                    <Text style={styles.modalTitle}>Filtrar por Fecha</Text>
+                        <View className="flex-1 justify-center items-center bg-black/50 p-5">
+                            <View className="bg-white rounded-2xl p-4 max-h-[90%] w-full max-w-[400px]">
+                                <View className="flex-row justify-between items-center mb-2 pb-2 border-b border-[#eee]">
+                                    <Text className="text-lg font-bold text-[#333]">Filtrar por Fecha</Text>
                                     <TouchableOpacity onPress={() => setDateModalVisible(false)}>
-                                        <Text style={styles.closeModalText}>Cerrar</Text>
+                                        <Text className="text-[#FF6B6B] text-base font-bold">Cerrar</Text>
                                     </TouchableOpacity>
                                 </View>
 
                                 <Calendar
                                     // Mark dates that have records
-                                    markedDates={uniqueDates.reduce((acc, date) => {
+                                    markedDates={uniqueDates.reduce((acc: any, date: string) => {
                                         acc[date] = {
                                             selected: true,
                                             selectedColor: '#4ECDC4',
@@ -139,7 +185,7 @@ export default function ProductHistoryScreen({ navigation, route }) {
                                         ...(selectedDate ? { [selectedDate]: { selected: true, selectedColor: '#FF6B6B', marked: true } } : {})
                                     })}
 
-                                    onDayPress={day => {
+                                    onDayPress={(day: any) => {
                                         const dateStr = day.dateString;
                                         if (uniqueDates.includes(dateStr)) {
                                             setSelectedDate(dateStr);
@@ -151,11 +197,11 @@ export default function ProductHistoryScreen({ navigation, route }) {
                                         todayTextColor: '#FF6B6B',
                                         arrowColor: '#4ECDC4',
                                         textMonthFontWeight: 'bold',
-                                        textDayHeaderfontWeight: 'bold',
+                                        textDayHeaderFontWeight: 'bold',
                                     }}
                                 />
-                                <View style={styles.legendContainer}>
-                                    <Text style={styles.legendText}>* Solo los días marcados son válidos.</Text>
+                                <View className="mt-2 p-2 bg-[#f5f5f5] rounded-lg">
+                                    <Text className="text-xs text-[#666] italic text-center">* Solo los días marcados son válidos.</Text>
                                 </View>
                             </View>
                         </View>
@@ -164,198 +210,17 @@ export default function ProductHistoryScreen({ navigation, route }) {
             )}
 
             {filteredHistory.length === 0 ? (
-                <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>No hay movimientos registrados.</Text>
+                <View className="flex-1 justify-center items-center">
+                    <Text className="text-lg text-[#999]">No hay movimientos registrados.</Text>
                 </View>
             ) : (
                 <FlatList
                     data={filteredHistory}
                     keyExtractor={(item, index) => `${index}-${item.timestamp}`}
                     renderItem={renderItem}
-                    contentContainerStyle={styles.list}
+                    contentContainerStyle={{ padding: 20, paddingTop: 0 }}
                 />
             )}
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f5f5f5',
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 20,
-        backgroundColor: '#fff',
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
-    },
-    backButton: {
-        padding: 10,
-        marginRight: 10,
-    },
-    backText: {
-        fontSize: 18,
-        color: '#666',
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#333',
-        flex: 1,
-    },
-    productSummary: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 20,
-        backgroundColor: '#eafbf9',
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
-    },
-    image: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        marginRight: 20,
-        backgroundColor: '#fff',
-    },
-    currentStockLabel: {
-        fontSize: 14,
-        color: '#666',
-    },
-    currentStockValue: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    dateFilterButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#eafbf9',
-        margin: 20,
-        marginTop: 10,
-        marginBottom: 10,
-        padding: 15,
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: '#4ECDC4',
-    },
-    dateFilterButtonText: {
-        fontSize: 16,
-        color: '#333',
-        fontWeight: 'bold',
-    },
-    clearDateBtn: {
-        marginLeft: 10,
-        backgroundColor: '#FF6B6B',
-        borderRadius: 10,
-        width: 20,
-        height: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    clearDateText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 12,
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
-    modalContent: {
-        backgroundColor: '#fff',
-        borderRadius: 20,
-        padding: 15,
-        maxHeight: '90%',
-        width: '100%',
-        maxWidth: 400,
-    },
-    modalHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 10,
-        paddingBottom: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
-    },
-    modalTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    closeModalText: {
-        color: '#FF6B6B',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    legendContainer: {
-        marginTop: 10,
-        padding: 10,
-        backgroundColor: '#f5f5f5',
-        borderRadius: 8,
-    },
-    legendText: {
-        fontSize: 12,
-        color: '#666',
-        fontStyle: 'italic',
-        textAlign: 'center',
-    },
-    list: {
-        padding: 20,
-        paddingTop: 0,
-    },
-    card: {
-        backgroundColor: '#fff',
-        borderRadius: 15,
-        padding: 15,
-        marginBottom: 15,
-        elevation: 2,
-    },
-    dateContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
-        paddingBottom: 5,
-    },
-    dateText: {
-        color: '#888',
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    timeText: {
-        color: '#aaa',
-        fontSize: 14,
-    },
-    infoContainer: {
-        alignItems: 'flex-start',
-    },
-    actionText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    restock: {
-        color: '#4ECDC4',
-    },
-    usage: {
-        color: '#FF6B6B',
-    },
-    emptyContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    emptyText: {
-        fontSize: 18,
-        color: '#999',
-    }
-});

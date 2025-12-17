@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { useInventory } from '../context/InventoryContext';
 
-export default function AddProductScreen({ navigation }) {
+export default function AddProductScreen({ navigation }: { navigation: any }) {
     const { addNewProduct } = useInventory();
 
     const [name, setName] = useState('');
@@ -11,8 +11,9 @@ export default function AddProductScreen({ navigation }) {
     const [unit, setUnit] = useState('');
     const [image, setImage] = useState('https://via.placeholder.com/150'); // Default image
     const [initialQty, setInitialQty] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!name || !unit || !initialQty) {
             Alert.alert("Error", "Por favor completa los campos obligatorios (Nombre, Unidad, Cantidad).");
             return;
@@ -24,135 +25,101 @@ export default function AddProductScreen({ navigation }) {
             return;
         }
 
-        const newProduct = {
-            name,
-            description,
-            unit,
-            image,
-            quantity: qty
-        };
+        setIsSaving(true);
 
-        addNewProduct(newProduct);
+        try {
+            const newProduct = {
+                name,
+                description,
+                unit,
+                image,
+                quantity: qty
+            };
 
-        Alert.alert("¡Éxito!", "Producto agregado correctamente.", [
-            { text: "OK", onPress: () => navigation.goBack() }
-        ]);
+            await addNewProduct(newProduct);
+
+            Alert.alert("✅ Producto Agregado", "El producto se ha guardado correctamente. Puedes agregar otro.", [
+                { text: "OK" }
+            ]);
+
+            // Clear fields to allow continuous adding
+            setName('');
+            setDescription('');
+            setUnit('');
+            setInitialQty('');
+            setImage('https://via.placeholder.com/150');
+
+        } catch (error) {
+            Alert.alert("❌ Error", "No se pudo guardar el producto. Verifica tu conexión e inténtalo de nuevo.");
+            console.error(error);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
-        <ScrollView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Text style={styles.backText}>← Volver</Text>
+        <ScrollView className="flex-1 bg-[#f5f5f5]">
+            <View className="flex-row items-center p-5 bg-white border-b border-[#ddd]">
+                <TouchableOpacity onPress={() => navigation.goBack()} className="p-2 mr-2">
+                    <Text className="text-lg text-[#666]">← Volver</Text>
                 </TouchableOpacity>
-                <Text style={styles.title}>Nuevo Producto</Text>
+                <Text className="text-2xl font-bold text-[#333]">Nuevo Producto</Text>
             </View>
 
-            <View style={styles.form}>
-                <Text style={styles.label}>Nombre del Producto *</Text>
+            <View className="p-5">
+                <Text className="text-base font-bold text-[#333] mb-1.5 mt-4">Nombre del Producto *</Text>
                 <TextInput
-                    style={styles.input}
+                    className="bg-white border border-[#ddd] rounded-xl p-4 text-base"
                     value={name}
                     onChangeText={setName}
                     placeholder="Ej. Jabón Líquido"
                 />
 
-                <Text style={styles.label}>Descripción</Text>
+                <Text className="text-base font-bold text-[#333] mb-1.5 mt-4">Descripción</Text>
                 <TextInput
-                    style={styles.input}
+                    className="bg-white border border-[#ddd] rounded-xl p-4 text-base"
                     value={description}
                     onChangeText={setDescription}
                     placeholder="Ej. Botella de 1 litro"
                 />
 
-                <Text style={styles.label}>Unidad de Medida *</Text>
+                <Text className="text-base font-bold text-[#333] mb-1.5 mt-4">Unidad de Medida *</Text>
                 <TextInput
-                    style={styles.input}
+                    className="bg-white border border-[#ddd] rounded-xl p-4 text-base"
                     value={unit}
                     onChangeText={setUnit}
                     placeholder="Ej. botellas, cajas, rollos"
                 />
 
-                <Text style={styles.label}>Cantidad Inicial *</Text>
+                <Text className="text-base font-bold text-[#333] mb-1.5 mt-4">Cantidad Inicial *</Text>
                 <TextInput
-                    style={styles.input}
+                    className="bg-white border border-[#ddd] rounded-xl p-4 text-base"
                     value={initialQty}
                     onChangeText={(text) => setInitialQty(text.replace(/[^0-9]/g, ''))}
                     placeholder="0"
                     keyboardType="numeric"
                 />
 
-                <Text style={styles.label}>URL de Imagen (Opcional)</Text>
+                <Text className="text-base font-bold text-[#333] mb-1.5 mt-4">URL de Imagen (Opcional)</Text>
                 <TextInput
-                    style={styles.input}
+                    className="bg-white border border-[#ddd] rounded-xl p-4 text-base"
                     value={image}
                     onChangeText={setImage}
                     placeholder="https://..."
                 />
 
-                <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-                    <Text style={styles.saveBtnText}>Guardar Producto</Text>
+                <TouchableOpacity
+                    className={`p-5 rounded-2xl items-center mt-8 shadow-md ${isSaving ? 'bg-[#aaccce] opacity-70' : 'bg-[#4ECDC4]'}`}
+                    onPress={handleSave}
+                    disabled={isSaving}
+                >
+                    {isSaving ? (
+                        <ActivityIndicator color="#fff" />
+                    ) : (
+                        <Text className="text-white text-lg font-bold">Guardar Producto</Text>
+                    )}
                 </TouchableOpacity>
             </View>
         </ScrollView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f5f5f5',
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 20,
-        backgroundColor: '#fff',
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
-    },
-    backButton: {
-        padding: 10,
-        marginRight: 10,
-    },
-    backText: {
-        fontSize: 18,
-        color: '#666',
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    form: {
-        padding: 20,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 5,
-        marginTop: 15,
-    },
-    input: {
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 10,
-        padding: 15,
-        fontSize: 16,
-    },
-    saveBtn: {
-        backgroundColor: '#4ECDC4',
-        padding: 20,
-        borderRadius: 15,
-        alignItems: 'center',
-        marginTop: 30,
-        elevation: 3,
-    },
-    saveBtnText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-});

@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { useInventory } from '../context/InventoryContext';
 
-export default function SummaryScreen({ navigation, route }) {
+export default function SummaryScreen({ navigation, route }: { navigation: any, route: any }) {
     const { logout } = useInventory();
     const { sessionLog } = route.params || { sessionLog: [] };
     const [modalVisible, setModalVisible] = useState(false);
@@ -18,46 +18,40 @@ export default function SummaryScreen({ navigation, route }) {
     const handleFinalize = () => {
         setModalVisible(false);
         // Return to Dashboard 
-        navigation.navigate('UserDashboard');
+        navigation.navigate('Dashboard'); // Fixed navigation target to match stack name
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Resumen de Movimientos</Text>
-            <Text style={styles.subtitle}>Revisa lo que registraste hoy:</Text>
+        <View className="flex-1 bg-[#f5f5f5] p-5">
+            <Text className="text-3xl font-bold text-[#333] text-center mb-1.5 mt-5">Resumen de Movimientos</Text>
+            <Text className="text-lg text-[#666] text-center mb-5">Revisa lo que registraste hoy:</Text>
 
-            <ScrollView style={styles.list}>
+            <ScrollView className="flex-1">
                 {changes.length === 0 ? (
-                    <Text style={styles.emptyText}>No registraste cambios en esta sesión.</Text>
+                    <Text className="text-lg text-center text-[#999] mt-12">No registraste cambios en esta sesión.</Text>
                 ) : (
-                    changes.map((item, index) => (
-                        <View key={index} style={styles.card}>
-                            <Text style={styles.productName}>{item.productName}</Text>
+                    changes.map((item: any, index: number) => (
+                        <View key={index} className="bg-white p-4 rounded-xl mb-2.5 border-l-[5px] border-[#4ECDC4] shadow-sm">
+                            <Text className="text-xl font-bold text-[#444] mb-2.5 text-center">{item.productName}</Text>
 
-                            <View style={styles.detailsRow}>
-                                <View style={styles.detailItem}>
-                                    <Text style={styles.detailLabel}>Había:</Text>
-                                    <Text style={styles.detailValue}>{item.initialQty} {item.unit}</Text>
+                            <View className="flex-row justify-around items-start">
+                                <View className="items-center">
+                                    <Text className="text-sm text-[#888] mb-0.5">Había:</Text>
+                                    <Text className="text-lg font-bold text-[#333]">{item.initialQty} {item.unit}</Text>
                                 </View>
 
-                                <View style={styles.detailItem}>
-                                    <Text style={[
-                                        styles.detailLabel,
-                                        item.action === 'restocked' ? styles.restockColor : styles.usageColor
-                                    ]}>
+                                <View className="items-center">
+                                    <Text className={`text-sm mb-0.5 ${item.action === 'restocked' ? 'text-[#4ECDC4]' : 'text-[#FF6B6B]'}`}>
                                         {item.action === 'restocked' ? 'Agregaste:' : 'Usaste:'}
                                     </Text>
-                                    <Text style={[
-                                        styles.amountText,
-                                        item.action === 'restocked' ? styles.restockColor : styles.usageColor
-                                    ]}>
+                                    <Text className={`text-xl font-bold ${item.action === 'restocked' ? 'text-[#4ECDC4]' : 'text-[#FF6B6B]'}`}>
                                         {item.amount} {item.unit}
                                     </Text>
                                 </View>
 
-                                <View style={styles.detailItem}>
-                                    <Text style={styles.detailLabel}>Quedan:</Text>
-                                    <Text style={styles.detailValue}>{item.finalQty} {item.unit}</Text>
+                                <View className="items-center">
+                                    <Text className="text-sm text-[#888] mb-0.5">Quedan:</Text>
+                                    <Text className="text-lg font-bold text-[#333]">{item.finalQty} {item.unit}</Text>
                                 </View>
                             </View>
 
@@ -66,9 +60,9 @@ export default function SummaryScreen({ navigation, route }) {
                 )}
             </ScrollView>
 
-            <View style={styles.footer}>
-                <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmAll}>
-                    <Text style={styles.confirmButtonText}>Confirmar Todo</Text>
+            <View className="pt-5">
+                <TouchableOpacity className="bg-[#4ECDC4] p-5 rounded-2xl items-center" onPress={handleConfirmAll}>
+                    <Text className="text-white text-xl font-bold">Confirmar Todo</Text>
                 </TouchableOpacity>
             </View>
 
@@ -79,24 +73,24 @@ export default function SummaryScreen({ navigation, route }) {
                 visible={modalVisible}
                 onRequestClose={() => setModalVisible(false)}
             >
-                <View style={styles.centeredView}>
-                    <View style={styles.modalView}>
-                        <Text style={styles.modalTitle}>¿Todo Correcto?</Text>
-                        <Text style={styles.modalText}>
+                <View className="flex-1 justify-center items-center bg-black/50">
+                    <View className="m-5 bg-white rounded-2xl p-8 items-center share-sm w-[90%] max-w-[400px] shadow-lg">
+                        <Text className="text-2xl font-bold mb-4 text-[#333]">¿Todo Correcto?</Text>
+                        <Text className="text-lg mb-6 text-center text-[#555]">
                             Al confirmar, se cerrará tu sesión.
                         </Text>
-                        <View style={styles.modalButtons}>
+                        <View className="flex-row gap-5">
                             <TouchableOpacity
-                                style={[styles.modalBtn, styles.cancelBtn]}
+                                className="p-4 rounded-xl min-w-[120px] items-center bg-[#FF6B6B]"
                                 onPress={() => setModalVisible(false)}
                             >
-                                <Text style={styles.modalBtnText}>Revisar</Text>
+                                <Text className="text-white text-base font-bold">Revisar</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
-                                style={[styles.modalBtn, styles.confirmBtn]}
+                                className="p-4 rounded-xl min-w-[120px] items-center bg-[#4ECDC4]"
                                 onPress={handleFinalize}
                             >
-                                <Text style={styles.modalBtnText}>SÍ, TERMINAR</Text>
+                                <Text className="text-white text-base font-bold">SÍ, TERMINAR</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -105,145 +99,3 @@ export default function SummaryScreen({ navigation, route }) {
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f5f5f5',
-        padding: 20,
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#333',
-        textAlign: 'center',
-        marginBottom: 5,
-        marginTop: 20,
-    },
-    subtitle: {
-        fontSize: 18,
-        color: '#666',
-        textAlign: 'center',
-        marginBottom: 20,
-    },
-    list: {
-        flex: 1,
-    },
-    emptyText: {
-        fontSize: 18,
-        textAlign: 'center',
-        color: '#999',
-        marginTop: 50,
-    },
-    card: {
-        backgroundColor: '#fff',
-        padding: 15,
-        borderRadius: 10,
-        marginBottom: 10,
-        borderLeftWidth: 5,
-        borderLeftColor: '#4ECDC4',
-        elevation: 2,
-    },
-    productName: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#444',
-        marginBottom: 10,
-        textAlign: 'center',
-    },
-    detailsRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'flex-start',
-    },
-    detailItem: {
-        alignItems: 'center',
-    },
-    detailLabel: {
-        fontSize: 14,
-        color: '#888',
-        marginBottom: 2,
-    },
-    detailValue: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    amountText: {
-        fontSize: 20,
-        fontWeight: 'bold',
-    },
-    usageColor: {
-        color: '#FF6B6B', // Red-ish
-    },
-    restockColor: {
-        color: '#4ECDC4', // Teal/Green-ish
-    },
-    footer: {
-        paddingTop: 20,
-    },
-    confirmButton: {
-        backgroundColor: '#4ECDC4',
-        padding: 20,
-        borderRadius: 15,
-        alignItems: 'center',
-    },
-    confirmButtonText: {
-        color: '#fff',
-        fontSize: 22,
-        fontWeight: 'bold',
-    },
-    centeredView: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)',
-    },
-    modalView: {
-        margin: 20,
-        backgroundColor: 'white',
-        borderRadius: 20,
-        padding: 35,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-        width: '90%',
-        maxWidth: 400,
-    },
-    modalTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 15,
-        color: '#333',
-    },
-    modalText: {
-        fontSize: 18,
-        marginBottom: 25,
-        textAlign: 'center',
-        color: '#555',
-    },
-    modalButtons: {
-        flexDirection: 'row',
-        gap: 20,
-    },
-    modalBtn: {
-        padding: 15,
-        borderRadius: 10,
-        minWidth: 120,
-        alignItems: 'center',
-    },
-    cancelBtn: {
-        backgroundColor: '#FF6B6B',
-    },
-    confirmBtn: {
-        backgroundColor: '#4ECDC4',
-    },
-    modalBtnText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-});

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "tictactoe",
-    "slug": "tictactoe",
+    "name": "Inventario",
+    "slug": "inventario",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,6 +16,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.ville.inventario",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -25,6 +26,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c58cedf1-8bc3-4d69-b644-5d02ac0a4bfb"
+      }
     }
   }
 }

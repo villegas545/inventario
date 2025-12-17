@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useInventory } from '../context/InventoryContext';
 import { StatusBar } from 'expo-status-bar';
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen({ navigation }: { navigation: any }) {
     const { login } = useInventory();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -32,21 +32,21 @@ export default function LoginScreen({ navigation }) {
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={styles.container}
+            className="flex-1 bg-[#f8f9fa]"
         >
             <StatusBar style="dark" />
-            <View style={styles.content}>
-                <View style={styles.headerContainer}>
-                    <Text style={styles.icon}>🏠</Text>
-                    <Text style={styles.title}>Bienvenido</Text>
-                    <Text style={styles.subtitle}>Sistema de Inventario Airbnb</Text>
+            <View className="flex-1 justify-center p-8 max-w-[500px] w-full self-center">
+                <View className="items-center mb-10">
+                    <Text className="text-6xl mb-2">🏠</Text>
+                    <Text className="text-3xl font-bold text-[#2d3436] text-center">Bienvenido</Text>
+                    <Text className="text-base text-[#636e72] mt-1 text-center">Sistema de Inventario Airbnb</Text>
                 </View>
 
-                <View style={styles.formContainer}>
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Usuario</Text>
+                <View className="bg-white p-8 rounded-2xl shadow-lg border-l-4 border-[#0984e3]">
+                    <View className="mb-5">
+                        <Text className="text-sm font-semibold text-[#2d3436] mb-2 ml-1">Usuario</Text>
                         <TextInput
-                            style={styles.input}
+                            className="bg-[#f1f2f6] rounded-xl p-4 text-base text-[#2d3436]"
                             placeholder="Ej. admin"
                             placeholderTextColor="#999"
                             value={username}
@@ -55,10 +55,10 @@ export default function LoginScreen({ navigation }) {
                         />
                     </View>
 
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Contraseña</Text>
+                    <View className="mb-5">
+                        <Text className="text-sm font-semibold text-[#2d3436] mb-2 ml-1">Contraseña</Text>
                         <TextInput
-                            style={styles.input}
+                            className="bg-[#f1f2f6] rounded-xl p-4 text-base text-[#2d3436]"
                             placeholder="••••••"
                             placeholderTextColor="#999"
                             value={password}
@@ -68,12 +68,12 @@ export default function LoginScreen({ navigation }) {
                     </View>
 
                     <TouchableOpacity
-                        style={styles.loginButton}
+                        className="bg-[#0984e3] rounded-xl p-4 items-center mt-2 shadow-sm active:bg-[#006bb3]"
                         onPress={handleLogin}
                         activeOpacity={0.8}
                         disabled={loading}
                     >
-                        <Text style={styles.loginButtonText}>
+                        <Text className="text-white text-lg font-bold">
                             {loading ? 'Iniciando sesión...' : 'Ingresar'}
                         </Text>
                     </TouchableOpacity>
@@ -82,84 +82,3 @@ export default function LoginScreen({ navigation }) {
         </KeyboardAvoidingView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f8f9fa',
-    },
-    content: {
-        flex: 1,
-        justifyContent: 'center',
-        padding: 30,
-        maxWidth: 500,
-        width: '100%',
-        alignSelf: 'center',
-    },
-    headerContainer: {
-        alignItems: 'center',
-        marginBottom: 40,
-    },
-    icon: {
-        fontSize: 60,
-        marginBottom: 10,
-    },
-    title: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#2d3436',
-        textAlign: 'center',
-    },
-    subtitle: {
-        fontSize: 16,
-        color: '#636e72',
-        marginTop: 5,
-        textAlign: 'center',
-    },
-    formContainer: {
-        backgroundColor: '#ffffff',
-        padding: 30,
-        borderRadius: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 15,
-        elevation: 5,
-    },
-    inputContainer: {
-        marginBottom: 20,
-    },
-    label: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#2d3436',
-        marginBottom: 8,
-        marginLeft: 4,
-    },
-    input: {
-        backgroundColor: '#f1f2f6',
-        borderRadius: 12,
-        padding: 16,
-        fontSize: 16,
-        color: '#2d3436',
-        borderWidth: 1,
-        borderColor: 'transparent',
-    },
-    loginButton: {
-        backgroundColor: '#0984e3',
-        borderRadius: 12,
-        padding: 18,
-        alignItems: 'center',
-        marginTop: 10,
-        shadowColor: '#0984e3',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 10,
-        elevation: 5,
-    },
-    loginButtonText: {
-        color: '#ffffff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-});

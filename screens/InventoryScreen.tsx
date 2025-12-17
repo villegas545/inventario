@@ -1,53 +1,131 @@
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, FlatList, Image, TouchableOpacity, TextInput, Modal, ScrollView, Alert, KeyboardAvoidingView, Platform, ListRenderItem } from 'react-native';
 import { useInventory } from '../context/InventoryContext';
 
-export default function InventoryScreen({ navigation }) {
-    const { products } = useInventory();
+export default function InventoryScreen({ navigation }: { navigation: any }) {
+    const { products, currentUser, updateProductDetails, deleteProduct } = useInventory();
     const [searchText, setSearchText] = useState('');
 
-    const filteredProducts = products.filter(p =>
-        p.name.toLowerCase().includes(searchText.toLowerCase())
+    const [editModalVisible, setEditModalVisible] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<any>(null);
+    const [editForm, setEditForm] = useState({
+        name: '',
+        description: '',
+        unit: '',
+        image: ''
+    });
+
+    const filteredProducts = products.filter((p: any) =>
+        p.name.toLowerCase().includes(searchText.toLowerCase()) && p.isActive !== false
     );
 
-    const renderItem = ({ item }) => (
+    const handleEditStart = (product: any) => {
+        setEditingProduct(product);
+        setEditForm({
+            name: product.name,
+            description: product.description || '',
+            unit: product.unit,
+            image: product.image
+        });
+        setEditModalVisible(true);
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editingProduct) return;
+
+        if (!editForm.name || !editForm.unit) {
+            Alert.alert("Error", "El nombre y la unidad son obligatorios");
+            return;
+        }
+
+        try {
+            await updateProductDetails(editingProduct.id, editForm);
+            setEditModalVisible(false);
+            setEditingProduct(null);
+            Alert.alert("✅ Éxito", "Producto actualizado correctamente");
+        } catch (error) {
+            Alert.alert("❌ Error", "No se pudo actualizar el producto.");
+            console.error(error);
+        }
+    };
+
+    const handleDelete = () => {
+        if (!editingProduct) return;
+
+        Alert.alert(
+            "Eliminar Producto",
+            "¿Estás seguro de que quieres eliminar este producto? Se ocultará del inventario pero el historial permanecerá.",
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Eliminar",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            await deleteProduct(editingProduct.id);
+                            setEditModalVisible(false);
+                            setEditingProduct(null);
+                            Alert.alert("🗑️ Eliminado", "El producto ha sido eliminado del inventario activo.");
+                        } catch (error) {
+                            Alert.alert("❌ Error", "No se pudo eliminar el producto.");
+                            console.error(error);
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
+    const renderItem: ListRenderItem<any> = ({ item }) => (
         <TouchableOpacity
-            style={styles.card}
+            className="bg-white rounded-xl p-4 mb-4 flex-row items-center shadow-sm"
             onPress={() => navigation.navigate('ProductHistory', { productId: item.id })}
             activeOpacity={0.7}
         >
-            <Image source={{ uri: item.image }} style={styles.image} />
-            <View style={styles.info}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.description} numberOfLines={1}>{item.description}</Text>
-                <Text style={styles.tapHint}>(Toca para ver historial)</Text>
+            <Image source={{ uri: item.image }} className="w-[60px] h-[60px] rounded-full mr-4 bg-[#eee]" />
+            <View className="flex-1 pr-2.5">
+                <Text className="text-lg font-bold text-[#333] mb-1">{item.name}</Text>
+                <Text className="text-sm text-[#888] mb-1" numberOfLines={1}>{item.description}</Text>
+                <Text className="text-xs text-[#4ECDC4] italic">(Toca para ver historial)</Text>
             </View>
-            <View style={styles.qtyContainer}>
-                <Text style={styles.qtyLabel}>Hay</Text>
-                <Text style={[
-                    styles.qty,
-                    item.quantity === 0 ? styles.zeroQty : (item.quantity < 5 ? styles.lowQty : styles.normalQty)
-                ]}>
-                    {item.quantity}
-                </Text>
-                <Text style={styles.unit}>{item.unit}</Text>
+
+            <View className="items-center justify-center gap-2.5">
+                <View className="items-center min-w-[60px]">
+                    <Text className="text-xs text-[#999] mb-0.5">Hay</Text>
+                    <Text className={`text-2xl font-bold ${item.quantity === 0 ? 'text-[#FF6B6B]' : (item.quantity < 5 ? 'text-[#FF9F43]' : 'text-[#4ECDC4]')}`}>
+                        {item.quantity}
+                    </Text>
+                    <Text className="text-xs text-[#999]">{item.unit}</Text>
+                </View>
+
+                {currentUser?.role === 'admin' && (
+                    <TouchableOpacity
+                        className="bg-[#f0f0f0] p-2 rounded-[20px] w-[35px] h-[35px] items-center justify-center"
+                        onPress={(e) => {
+                            e.stopPropagation();
+                            handleEditStart(item);
+                        }}
+                    >
+                        <Text className="text-lg text-[#666]">✎</Text>
+                    </TouchableOpacity>
+                )}
             </View>
         </TouchableOpacity>
     );
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Text style={styles.backText}>← Volver</Text>
+        <View className="flex-1 bg-[#f5f5f5]">
+            <View className="flex-row items-center p-5 bg-white border-b border-[#ddd]">
+                <TouchableOpacity onPress={() => navigation.goBack()} className="p-2.5 mr-2.5">
+                    <Text className="text-lg text-[#666]">← Volver</Text>
                 </TouchableOpacity>
-                <Text style={styles.title}>Inventario Actual</Text>
+                <Text className="text-2xl font-bold text-[#333]">Inventario Actual</Text>
             </View>
 
-            <View style={styles.searchContainer}>
+            <View className="p-5 pb-0">
                 <TextInput
-                    style={styles.searchInput}
+                    className="bg-white p-4 rounded-xl text-lg border border-[#ddd] shadow-sm"
                     placeholder="🔍 Buscar producto..."
                     value={searchText}
                     onChangeText={setSearchText}
@@ -59,117 +137,80 @@ export default function InventoryScreen({ navigation }) {
                 data={filteredProducts}
                 keyExtractor={item => item.id}
                 renderItem={renderItem}
-                contentContainerStyle={styles.list}
+                contentContainerStyle={{ padding: 20 }}
             />
+
+            <Modal
+                transparent={true}
+                visible={editModalVisible}
+                animationType="slide"
+                onRequestClose={() => setEditModalVisible(false)}
+            >
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    className="flex-1 bg-black/50 justify-center items-center"
+                >
+                    <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', width: '100%' }}>
+                        <View className="bg-white rounded-2xl p-6 w-[90%] max-w-[400px] self-center shadow-lg">
+                            <Text className="text-2xl font-bold text-[#333] mb-1 text-center">Editar Producto</Text>
+                            <Text className="text-sm text-[#FF6B6B] mb-5 text-center italic">Nota: La cantidad solo se edita en "Reponer Inventario"</Text>
+
+                            <Text className="text-base text-[#666] mb-1.5 font-semibold">Nombre</Text>
+                            <TextInput
+                                className="bg-[#f9f9f9] border border-[#ddd] rounded-xl p-3 text-base mb-4"
+                                value={editForm.name}
+                                onChangeText={(t) => setEditForm({ ...editForm, name: t })}
+                            />
+
+                            <Text className="text-base text-[#666] mb-1.5 font-semibold">Descripción</Text>
+                            <TextInput
+                                className="bg-[#f9f9f9] border border-[#ddd] rounded-xl p-3 text-base mb-4"
+                                value={editForm.description}
+                                onChangeText={(t) => setEditForm({ ...editForm, description: t })}
+                            />
+
+                            <Text className="text-base text-[#666] mb-1.5 font-semibold">Unidad de medida (kg, pza, etc)</Text>
+                            <TextInput
+                                className="bg-[#f9f9f9] border border-[#ddd] rounded-xl p-3 text-base mb-4"
+                                value={editForm.unit}
+                                onChangeText={(t) => setEditForm({ ...editForm, unit: t })}
+                            />
+
+                            <Text className="text-base text-[#666] mb-1.5 font-semibold">URL de Imagen</Text>
+                            <TextInput
+                                className="bg-[#f9f9f9] border border-[#ddd] rounded-xl p-3 text-base mb-4"
+                                value={editForm.image}
+                                onChangeText={(t) => setEditForm({ ...editForm, image: t })}
+                            />
+
+                            <View className="flex-row gap-4 mt-2">
+                                <TouchableOpacity
+                                    className="flex-1 p-4 rounded-xl items-center bg-[#FF6B6B]"
+                                    onPress={() => setEditModalVisible(false)}
+                                >
+                                    <Text className="text-white font-bold text-base">Cancelar</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    className="flex-1 p-4 rounded-xl items-center bg-[#4ECDC4]"
+                                    onPress={handleSaveEdit}
+                                >
+                                    <Text className="text-white font-bold text-base">Guardar</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            {currentUser?.role === 'admin' && (
+                                <TouchableOpacity
+                                    className="mt-5 p-4 bg-[#fff0f0] rounded-xl border border-[#ffcccc] items-center"
+                                    onPress={handleDelete}
+                                >
+                                    <Text className="text-[#FF6B6B] font-bold text-sm">🗑️ Eliminar Producto</Text>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    </ScrollView>
+                </KeyboardAvoidingView>
+            </Modal>
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f5f5f5',
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 20,
-        backgroundColor: '#fff',
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
-    },
-    backButton: {
-        padding: 10,
-        marginRight: 10,
-    },
-    backText: {
-        fontSize: 18,
-        color: '#666',
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    searchContainer: {
-        padding: 20,
-        paddingBottom: 0,
-    },
-    searchInput: {
-        backgroundColor: '#fff',
-        padding: 15,
-        borderRadius: 10,
-        fontSize: 18,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        elevation: 1,
-    },
-    list: {
-        padding: 20,
-    },
-    card: {
-        backgroundColor: '#fff',
-        borderRadius: 15,
-        padding: 15,
-        marginBottom: 15,
-        flexDirection: 'row',
-        alignItems: 'center',
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-    },
-    image: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        marginRight: 15,
-        backgroundColor: '#eee',
-    },
-    info: {
-        flex: 1,
-    },
-    name: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 4,
-    },
-    description: {
-        fontSize: 14,
-        color: '#888',
-        marginBottom: 4,
-    },
-    tapHint: {
-        fontSize: 12,
-        color: '#4ECDC4',
-        fontStyle: 'italic',
-    },
-    qtyContainer: {
-        alignItems: 'center',
-        minWidth: 60,
-    },
-    qtyLabel: {
-        fontSize: 12,
-        color: '#999',
-        marginBottom: 2,
-    },
-    qty: {
-        fontSize: 24,
-        fontWeight: 'bold',
-    },
-    normalQty: {
-        color: '#4ECDC4',
-    },
-    lowQty: {
-        color: '#FF9F43',
-    },
-    zeroQty: {
-        color: '#FF6B6B',
-    },
-    unit: {
-        fontSize: 12,
-        color: '#999',
-    }
-});

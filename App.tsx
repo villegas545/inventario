@@ -1,3 +1,5 @@
+
+import './global.css';
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -12,15 +14,18 @@ import ProductHistoryScreen from './screens/ProductHistoryScreen';
 import AddProductScreen from './screens/AddProductScreen';
 import SummaryScreen from './screens/SummaryScreen';
 import { StatusBar } from 'expo-status-bar';
-import { View, Platform, StyleSheet } from 'react-native';
+import { View, Platform } from 'react-native';
 
 const Stack = createStackNavigator();
 
 export default function App() {
   return (
     <InventoryProvider>
-      <View style={styles.webContainer}>
-        <View style={styles.mobileContainer}>
+      <View className="flex-1 bg-[#333] items-center justify-center">
+        <View
+          className="flex-1 w-full h-full bg-white overflow-hidden shadow-xl"
+          style={Platform.OS === 'web' ? { maxWidth: 480, maxHeight: 900 } : {}}
+        >
           <NavigationContainer>
             <StatusBar style="dark" />
             <Stack.Navigator
@@ -43,29 +48,3 @@ export default function App() {
     </InventoryProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  webContainer: {
-    flex: 1,
-    backgroundColor: '#333', // Dark background outside phone
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  mobileContainer: {
-    flex: 1,
-    width: Platform.OS === 'web' ? '100%' : '100%',
-    maxWidth: Platform.OS === 'web' ? 480 : '100%', // Max width for tablet/large phone feel
-    height: Platform.OS === 'web' ? '100%' : '100%',
-    maxHeight: Platform.OS === 'web' ? 900 : '100%',
-    backgroundColor: '#fff',
-    overflow: 'hidden',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-});
