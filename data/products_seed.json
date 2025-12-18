@@ -1,20 +1,314 @@
 [
     {
-        "name": "Coca Cola 600ml",
-        "description": "Refresco de cola botella de plástico",
-        "quantity": 50,
+        "name": "Acondicionador",
+        "description": "Descontar cuando se acabe la botella, abrir uno nuevo hasta que se acabe el que esta abierto",
+        "quantity": 12,
         "unit": "botellas"
     },
     {
-        "name": "Sabritas Sal",
-        "description": "Papas fritas clásicas 45g",
+        "name": "Alcohol",
+        "description": "Descontar por pieza",
+        "quantity": 200,
+        "unit": "piezas"
+    },
+    {
+        "name": "Algodón",
+        "description": "Descontar por pieza",
+        "quantity": 2,
+        "unit": "piezas"
+    },
+    {
+        "name": "Aromatizantes",
+        "description": "Descontar por pieza",
+        "quantity": 27,
+        "unit": "piezas"
+    },
+    {
+        "name": "Azúcar",
+        "description": "Descontar por pieza",
+        "quantity": 279,
+        "unit": "piezas"
+    },
+    {
+        "name": "Bases aromatizantes",
+        "description": "Descontar por pieza",
+        "quantity": 2,
+        "unit": "piezas"
+    },
+    {
+        "name": "Bolsas CH",
+        "description": "Descontar por pieza",
+        "quantity": 30,
+        "unit": "piezas"
+    },
+    {
+        "name": "Bolsas G",
+        "description": "Descontar por pieza",
+        "quantity": 2.125,
+        "unit": "piezas"
+    },
+    {
+        "name": "Brochas",
+        "description": "Descontar por pieza",
+        "quantity": 4,
+        "unit": "piezas"
+    },
+    {
+        "name": "Broches",
+        "description": "Descontar por paquete",
+        "quantity": 37,
+        "unit": "paquetes"
+    },
+    {
+        "name": "Café",
+        "description": "Descontar por pieza",
+        "quantity": 278,
+        "unit": "piezas"
+    },
+    {
+        "name": "Contenedores algodon",
+        "description": "Descontar por pieza",
+        "quantity": 2,
+        "unit": "piezas"
+    },
+    {
+        "name": "Cloro CH",
+        "description": "Descontar cuando se acabe la botella, abrir uno nuevo hasta que se acabe el que esta abierto",
+        "quantity": 8,
+        "unit": "botellas"
+    },
+    {
+        "name": "Cremoras",
+        "description": "Descontar por pieza",
+        "quantity": 277,
+        "unit": "piezas"
+    },
+    {
+        "name": "Curitas",
+        "description": "Descontar por pieza",
+        "quantity": 220,
+        "unit": "piezas"
+    },
+    {
+        "name": "Dispensadores",
+        "description": "Descontar por pieza",
+        "quantity": 2,
+        "unit": "piezas"
+    },
+    {
+        "name": "Esponjas ajax",
+        "description": "Descontar por pieza",
+        "quantity": 190,
+        "unit": "piezas"
+    },
+    {
+        "name": "Esponjas refri",
+        "description": "Descontar por pieza",
+        "quantity": 2.5,
+        "unit": "piezas"
+    },
+    {
+        "name": "Esponjas trastes",
+        "description": "Descontar por pieza",
+        "quantity": 49,
+        "unit": "piezas"
+    },
+    {
+        "name": "Estropajos",
+        "description": "Descontar por pieza",
+        "quantity": 12,
+        "unit": "piezas"
+    },
+    {
+        "name": "Fabuloso G",
+        "description": "Descontar cuando se acabe la botella, abrir uno nuevo hasta que se acabe el que esta abierto",
+        "quantity": 0.5,
+        "unit": "botellas"
+    },
+    {
+        "name": "Frasco G jabón",
+        "description": "Descontar cuando se acabe la botella, abrir uno nuevo hasta que se acabe el que esta abierto",
+        "quantity": 10,
+        "unit": "botellas"
+    },
+    {
+        "name": "Galon de jabon manos",
+        "description": "Descontar cuando se acabe la botella, abrir uno nuevo hasta que se acabe el que esta abierto",
+        "quantity": 1,
+        "unit": "galones"
+    },
+    {
+        "name": "Galon de jabon trastes",
+        "description": "Descontar cuando se acabe la botella, abrir uno nuevo hasta que se acabe el que esta abierto",
+        "quantity": 1,
+        "unit": "galones"
+    },
+    {
+        "name": "Gasa simple",
+        "description": "Descontar por pieza",
+        "quantity": 10,
+        "unit": "piezas"
+    },
+    {
+        "name": "Harpic baño",
+        "description": "Descontar por pieza",
+        "quantity": 3,
+        "unit": "piezas"
+    },
+    {
+        "name": "Jabón cuerpo",
+        "description": "Descontar cuando se acabe la botella, abrir uno nuevo hasta que se acabe el que esta abierto",
+        "quantity": 10,
+        "unit": "botellas"
+    },
+    {
+        "name": "Jabón manos CH",
+        "description": "Descontar cuando se acabe la botella, abrir uno nuevo hasta que se acabe el que esta abierto",
+        "quantity": 1,
+        "unit": "botellas"
+    },
+    {
+        "name": "Jabón manos G",
+        "description": "Descontar cuando se acabe la botella, abrir uno nuevo hasta que se acabe el que esta abierto",
+        "quantity": 3,
+        "unit": "botellas"
+    },
+    {
+        "name": "Jabon ropa",
+        "description": "Descontar por pieza",
         "quantity": 20,
+        "unit": "piezas"
+    },
+    {
+        "name": "Jabón trastes G",
+        "description": "Descontar cuando se acabe la botella, abrir uno nuevo hasta que se acabe el que esta abierto",
+        "quantity": 2,
+        "unit": "botellas"
+    },
+    {
+        "name": "Jabonera",
+        "description": "Descontar por pieza",
+        "quantity": 1,
+        "unit": "piezas"
+    },
+    {
+        "name": "Limpia esepejos",
+        "description": "Descontar por pieza",
+        "quantity": 3,
+        "unit": "piezas"
+    },
+    {
+        "name": "Limpia estufa",
+        "description": "Descontar por pieza",
+        "quantity": 2,
+        "unit": "piezas"
+    },
+    {
+        "name": "Liquido sillones",
+        "description": "Descontar por pieza",
+        "quantity": 1,
+        "unit": "piezas"
+    },
+    {
+        "name": "Magitel",
+        "description": "Descontar por pieza",
+        "quantity": 0.5,
+        "unit": "piezas"
+    },
+    {
+        "name": "Maiz",
+        "description": "Descontar cuando se acabe la bolsa, abrir uno nuevo hasta que se acabe el que esta abierto",
+        "quantity": 4.5,
         "unit": "bolsas"
     },
     {
-        "name": "Agua Ciel 1L",
-        "description": "Agua purificada natural",
-        "quantity": 100,
+        "name": "Papel de baño",
+        "description": "Descontar por pieza",
+        "quantity": 18,
+        "unit": "rollos"
+    },
+    {
+        "name": "Pastas minis",
+        "description": "Descontar por pieza",
+        "quantity": 82,
+        "unit": "piezas"
+    },
+    {
+        "name": "Pastillas baño",
+        "description": "Descontar por pieza",
+        "quantity": 27,
+        "unit": "piezas"
+    },
+    {
+        "name": "Pilas energizer",
+        "description": "Descontar por pieza",
+        "quantity": 7,
+        "unit": "piezas"
+    },
+    {
+        "name": "Pinol",
+        "description": "Descontar cuando se acabe la botella, abrir uno nuevo hasta que se acabe el que esta abierto",
+        "quantity": 2.25,
         "unit": "botellas"
+    },
+    {
+        "name": "Recipiente p/palomitas",
+        "description": "Descontar por pieza",
+        "quantity": 3,
+        "unit": "piezas"
+    },
+    {
+        "name": "Saleros",
+        "description": "Descontar por pieza",
+        "quantity": 0,
+        "unit": "piezas"
+    },
+    {
+        "name": "Servilletas",
+        "description": "Descontar cuando se acabe paquete, abrir uno nuevo hasta que se acabe el que esta abierto",
+        "quantity": 0.75,
+        "unit": "paquetes"
+    },
+    {
+        "name": "Servilletas rollo",
+        "description": "Descontar por pieza, abrir uno nuevo hasta que se acabe el que esta abierto",
+        "quantity": 3,
+        "unit": "rollos"
+    },
+    {
+        "name": "Shampoo",
+        "description": "Descontar cuando se acabe la botella, abrir uno nuevo hasta que se acabe el que esta abierto",
+        "quantity": 6,
+        "unit": "botellas"
+    },
+    {
+        "name": "Spray aromatizante",
+        "description": "Descontar por pieza",
+        "quantity": 4,
+        "unit": "botes"
+    },
+    {
+        "name": "Spray limpia refri",
+        "description": "Descontar cuando se acabe la botella, abrir uno nuevo hasta que se acabe el que esta abierto",
+        "quantity": 2,
+        "unit": "botellas"
+    },
+    {
+        "name": "Té",
+        "description": "Descontar por pieza",
+        "quantity": 18,
+        "unit": "piezas"
+    },
+    {
+        "name": "Toallitas secadora",
+        "description": "Descontar cuando se acabe caja, abrir uno nuevo hasta que se acabe el que esta abierto",
+        "quantity": 1,
+        "unit": "cajas"
+    },
+    {
+        "name": "Venda CH",
+        "description": "Descontar por pieza",
+        "quantity": 1,
+        "unit": "piezas"
     }
 ]
