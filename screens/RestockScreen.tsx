@@ -94,9 +94,9 @@ export default function RestockScreen({ navigation }: { navigation: any }) {
             >
                 <KeyboardAvoidingView
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
-                    className="flex-1 bg-black/50 justify-center items-center"
+                    className="flex-1 bg-black/50 justify-center items-center p-5"
                 >
-                    <View className="bg-white w-[85%] max-w-[400px] rounded-2xl p-8 items-center shadow-lg">
+                    <View className="bg-white w-full max-w-[400px] rounded-2xl p-8 items-center shadow-lg">
                         {selectedProduct && (
                             <>
                                 <Text className="text-2xl font-bold text-[#333] mb-2.5 text-center">

@@ -148,10 +148,10 @@ export default function InventoryScreen({ navigation }: { navigation: any }) {
             >
                 <KeyboardAvoidingView
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
-                    className="flex-1 bg-black/50 justify-center items-center"
+                    className="flex-1 bg-black/50 justify-center items-center p-5"
                 >
                     <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', width: '100%' }}>
-                        <View className="bg-white rounded-2xl p-6 w-[90%] max-w-[400px] self-center shadow-lg">
+                        <View className="bg-white rounded-2xl p-6 w-full max-w-[400px] self-center shadow-lg">
                             <Text className="text-2xl font-bold text-[#333] mb-1 text-center">Editar Producto</Text>
                             <Text className="text-sm text-[#FF6B6B] mb-5 text-center italic">Nota: La cantidad solo se edita en "Reponer Inventario"</Text>
 

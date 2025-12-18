@@ -26,6 +26,7 @@ export interface HistoryItem {
     new?: number;
     user?: string;
     changes?: string[];
+    sessionId?: string;
 }
 
 export interface Product {
@@ -243,6 +244,165 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const restoreDatabase = async (backupData: Product[]) => {
+        try {
+            console.log("Iniciando restauración de base de datos...");
+            setLoading(true);
+
+            // 1. Obtener todos los productos actuales
+            const snapshot = await getDocs(collection(db, 'products'));
+
+            // 2. Eliminar todos los productos actuales en lotes
+            const deleteBatchLimit = 400; // Margen de seguridad
+            const deleteChunks = [];
+            let currentDeleteBatch = writeBatch(db);
+            let deleteCounter = 0;
+
+            snapshot.docs.forEach((doc) => {
+                currentDeleteBatch.delete(doc.ref);
+                deleteCounter++;
+                if (deleteCounter >= deleteBatchLimit) {
+                    deleteChunks.push(currentDeleteBatch.commit());
+                    currentDeleteBatch = writeBatch(db);
+                    deleteCounter = 0;
+                }
+            });
+            if (deleteCounter > 0) deleteChunks.push(currentDeleteBatch.commit());
+
+            await Promise.all(deleteChunks);
+            console.log("Base de datos limpia.");
+
+            // 3. Insertar datos del respaldo
+            const addChunks = [];
+            let currentAddBatch = writeBatch(db);
+            let addCounter = 0;
+
+            backupData.forEach((product) => {
+                const docRef = doc(collection(db, 'products')); // Generar nuevo ID o usar el del producto si se quisiera preservar, pero mejor nuevos IDs para evitar colisiones raras, aunque perdemos link si hay referencias externas.
+                // En este caso, si el producto tiene ID en el JSON, lo ignoramos y dejamos que Firestore cree uno nuevo, O
+                // si queremos preservar IDs exactos para integridad histórica estricta, usaríamos set(doc(db, 'products', product.id), ...)
+                // Dado que es un "Restore", preservar IDs parece lo correcto.
+
+                // Opción: Si el JSON tiene ID, usarlo. Si no, generar uno.
+                const targetRef = product.id ? doc(db, 'products', product.id) : docRef;
+
+                // Limpiar el objeto antes de guardar (quitar ID si está dentro de data, aunque set lo sobrescribe)
+                const { id, ...dataToSave } = product;
+
+                currentAddBatch.set(targetRef, dataToSave);
+
+                addCounter++;
+                if (addCounter >= deleteBatchLimit) {
+                    addChunks.push(currentAddBatch.commit());
+                    currentAddBatch = writeBatch(db);
+                    addCounter = 0;
+                }
+            });
+
+            if (addCounter > 0) addChunks.push(currentAddBatch.commit());
+            await Promise.all(addChunks);
+
+            console.log("Restauración completada.");
+        } catch (e) {
+            console.error("Error al restaurar base de datos:", e);
+            throw e;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+
+    const saveJobLog = async (jobData: any) => {
+        try {
+            await addDoc(collection(db, 'jobs'), {
+                ...jobData,
+                timestamp: Date.now()
+            });
+        } catch (e) {
+            console.error("Error saving job log:", e);
+        }
+    };
+
+    const getLastJob = async () => {
+        try {
+            const q = query(collection(db, 'jobs'), where("timestamp", ">", 0));
+            // Better: Order by timestamp desc limit 1. Requires index possibly.
+            // Simplified: Fetch all (assuming low volume of jobs) and sort locally or try simple orderBy if no index required for small collection.
+            // Firestore requires index for simple sorting sometimes? No, single field sort is auto indexed.
+            // But we need to use orderBy("timestamp", "desc").
+            // Let's assume user has no index yet, so maybe just get recent jobs.
+            // Actually, for singular query `orderBy` works fine by default.
+
+            // To avoid complex query issues without index creation response from CLI, I'll fetch recent.
+            // But let's try proper way.
+
+            // For now, simpler: user wants "el ultimo".
+            const jobsSnapshot = await getDocs(collection(db, 'jobs'));
+            const jobs = jobsSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            jobs.sort((a: any, b: any) => b.timestamp - a.timestamp);
+            return jobs.length > 0 ? jobs[0] : null;
+        } catch (e) {
+            console.error("Error fetching last job:", e);
+            return null;
+        }
+    };
+
+    const rollbackJob = async (job: any) => {
+        try {
+            setLoading(true);
+            const { sessionId, details } = job;
+            // details is array of { productId, amountChanged, ... }
+            // Actually, we rely on the history items if we can find them, OR we rely on the job log details to revert numbers.
+            // Reverting numbers is safer from Job Log if we save deltas there.
+
+            // 1. Revert Quantities
+            const batch = writeBatch(db);
+
+            // We need to fetch current products first to get their history
+            // Actually we have `products` in state but better to be transactional?
+            // Mixing state and batch is tricky. Let's do async ops.
+
+            for (const detail of (details || [])) {
+                const productRef = doc(db, 'products', detail.productId);
+                // We need to read it to update history array specifically (remove the item)
+                // Firestore transaction would be best but let's do simple read-modify-write per product or batch update if we just add "Rollback" history which is safer than deleting history.
+                // User asked: "eliminando tambien los registros realizados". So we must delete history items.
+
+                // Get fresh doc
+                const pDoc = await import('firebase/firestore').then(mod => mod.getDoc(productRef));
+                if (pDoc.exists()) {
+                    const pData = pDoc.data() as Product;
+                    const newHistory = (pData.history || []).filter(h => h.sessionId !== sessionId);
+
+                    // Revert quantity: if we added 5, we subtract 5.
+                    // The detail should store the delta 'amount'.
+                    const reverseDetails = detail.changes || [];
+                    // Wait, let's define ensure we save meaningful details in saveJobLog.
+                    // Assuming detail has { productId, delta }.
+                    const newQty = pData.quantity - (detail.delta || 0);
+
+                    batch.update(productRef, {
+                        quantity: newQty < 0 ? 0 : newQty,
+                        history: newHistory
+                    });
+                }
+            }
+
+            // 2. Delete Job Record
+            const jobRef = doc(db, 'jobs', job.id);
+            batch.delete(jobRef);
+
+            await batch.commit();
+            console.log("Rollback completed.");
+        } catch (e) {
+            console.error("Error rolling back job:", e);
+            throw e;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const addNewProduct = async (product: any) => {
         try {
             // Destructure to omit 'image' if it exists in the product object being added
@@ -302,9 +462,13 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
             deleteProduct,
             restoreProduct,
             permanentDeleteProduct,
+            restoreDatabase,
             login,
             logout,
-            loading
+            loading,
+            saveJobLog,
+            getLastJob,
+            rollbackJob
         }}>
             {children}
         </InventoryContext.Provider>

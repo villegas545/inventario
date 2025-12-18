@@ -1,10 +1,12 @@
 
 import React from 'react';
-import { View, Text, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Alert, Platform } from 'react-native';
 import { useInventory } from '../context/InventoryContext';
 
 export default function DashboardScreen({ navigation }: { navigation: any }) {
     const { products, currentUser, logout } = useInventory();
+
+
 
     const allMenuItems = [
         {
@@ -14,6 +16,14 @@ export default function DashboardScreen({ navigation }: { navigation: any }) {
             target: "UserProduct",
             color: "#4ECDC4", // Teal
             roles: ['admin', 'user']
+        },
+        {
+            icon: "⏮️",
+            title: "Último Trabajo",
+            subtitle: "Ver y deshacer (Rollback)",
+            target: "LastJob",
+            color: "#e17055", // Burnt Sienna
+            roles: ['admin'] // ADMIN only
         },
         {
             icon: "📦",
@@ -54,6 +64,14 @@ export default function DashboardScreen({ navigation }: { navigation: any }) {
             target: "InactiveProducts",
             color: "#636e72", // Gray
             roles: ['admin'] // ADMIN only
+        },
+        {
+            icon: "💾",
+            title: "Respaldos",
+            subtitle: "Descargar o restaurar DB",
+            target: "Backup",
+            color: "#6c5ce7", // Purple
+            roles: ['admin']
         }
     ];
 
