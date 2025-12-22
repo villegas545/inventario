@@ -207,7 +207,7 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
             amount: changeAmount,
             previous: currentQty,
             new: newQuantity,
-            sessionId
+            ...(sessionId ? { sessionId } : {})
         });
 
         await updateProductHistory(id, { quantity: newQuantity }, historyItem);
