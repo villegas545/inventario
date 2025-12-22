@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, Alert, TextInput, Modal } from 'react-native';
 import { useInventory } from '../context/InventoryContext';
 import { formatDate } from '../utils/dateUtils';
@@ -23,14 +23,17 @@ interface PendingAction {
 
 export default function UserProductScreen({ navigation }: { navigation: any }) {
     const { products, updateProductQuantity, logout } = useInventory();
-    const activeProducts = products.filter((p: any) => p.isActive !== false);
+    const activeProducts = products
+        .filter((p: any) => p.isActive !== false)
+        .sort((a: any, b: any) => a.name.localeCompare(b.name));
     const [currentIndex, setCurrentIndex] = useState(0);
     const [useAmount, setUseAmount] = useState('');
 
     // Generate unique session ID for this job flow
     const sessionId = React.useMemo(() => `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, []);
 
-    const [sessionLog, setSessionLog] = useState<SessionLogItem[]>([]);
+    // Use Ref to reliably track log across renders and navigation callbacks
+    const sessionLog = useRef<SessionLogItem[]>([]);
 
     const [modalVisible, setModalVisible] = useState(false);
     const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
@@ -49,7 +52,7 @@ export default function UserProductScreen({ navigation }: { navigation: any }) {
 
     // Helper to log actions
     const addToLog = (actionType: 'used' | 'restocked', amount: number, initialQty: number, finalQty: number) => {
-        setSessionLog(prev => [...prev, {
+        sessionLog.current.push({
             productId: product.id,
             productName: product.name,
             action: actionType,
@@ -57,7 +60,7 @@ export default function UserProductScreen({ navigation }: { navigation: any }) {
             unit: product.unit,
             initialQty: initialQty,
             finalQty: finalQty
-        }]);
+        });
     };
 
     const [errorModalVisible, setErrorModalVisible] = useState(false);
@@ -78,13 +81,15 @@ export default function UserProductScreen({ navigation }: { navigation: any }) {
             return;
         }
 
-        if (product.quantity < amount) {
-            setErrorMessage(`Solo tienes ${product.quantity} ${product.unit}. No puedes registrar ${amount}.`);
+        const currentQty = Number(product.quantity || 0);
+
+        if (currentQty < amount) {
+            setErrorMessage(`Solo tienes ${currentQty} ${product.unit}. No puedes registrar ${amount}.`);
             setErrorModalVisible(true);
             return;
         }
 
-        if (product.quantity - amount === 0) {
+        if (currentQty - amount === 0) {
             setPendingAction({ amount, direction, isZeroStock: true });
             setModalVisible(true);
             return;
@@ -167,7 +172,7 @@ export default function UserProductScreen({ navigation }: { navigation: any }) {
                 setCurrentIndex(currentIndex + 1);
                 setUseAmount('');
             } else {
-                navigation.replace('Summary', { sessionLog: sessionLog, sessionId: sessionId });
+                navigation.replace('Summary', { sessionLog: sessionLog.current, sessionId: sessionId });
             }
         } else {
             if (currentIndex > 0) {
@@ -223,7 +228,7 @@ export default function UserProductScreen({ navigation }: { navigation: any }) {
                 {(product.history || []).length > 0 && (
                     <View className="w-full p-4 bg-[#eef] rounded-xl">
                         <Text className="text-lg font-bold mb-2.5 text-[#444]">Últimos movimientos:</Text>
-                        {(product.history || []).map((item, index) => {
+                        {(product.history || []).map((item: any, index: number) => {
                             const { fullDate, time } = formatDate(item.timestamp);
                             return (
                                 <View key={index} className="flex-col py-2 border-b border-[#ccc]">

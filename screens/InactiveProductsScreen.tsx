@@ -6,7 +6,9 @@ import { useInventory } from '../context/InventoryContext';
 export default function InactiveProductsScreen({ navigation }: { navigation: any }) {
     const { products, restoreProduct, permanentDeleteProduct } = useInventory();
 
-    const inactiveProducts = products.filter((p: any) => p.isActive === false);
+    const inactiveProducts = products
+        .filter((p: any) => p.isActive === false)
+        .sort((a: any, b: any) => a.name.localeCompare(b.name));
 
     const handleRestore = (product: any) => {
         Alert.alert(

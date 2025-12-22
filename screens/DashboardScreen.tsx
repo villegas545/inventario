@@ -1,12 +1,37 @@
 
-import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert, Platform } from 'react-native';
-import { useInventory } from '../context/InventoryContext';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, TouchableOpacity, Alert, Platform, Modal } from 'react-native';
+import { useInventory, Announcement } from '../context/InventoryContext';
 
 export default function DashboardScreen({ navigation }: { navigation: any }) {
-    const { products, currentUser, logout } = useInventory();
+    const { products, currentUser, logout, announcements } = useInventory();
 
+    // Announcement Logic for Encargado
+    const [currentAnnouncement, setCurrentAnnouncement] = useState<Announcement | null>(null);
+    const [queue, setQueue] = useState<Announcement[]>([]);
 
+    useEffect(() => {
+        if (currentUser?.role === 'user' && announcements.length > 0) {
+            // Filter active announcements
+            const active = announcements.filter((a: Announcement) => a.isActive);
+            if (active.length > 0) {
+                setQueue(active);
+                setCurrentAnnouncement(active[0]);
+            }
+        }
+    }, [currentUser, announcements]);
+
+    const handleConfirmAnnouncement = () => {
+        // Remove current from queue
+        const nextQueue = queue.slice(1);
+        setQueue(nextQueue);
+
+        if (nextQueue.length > 0) {
+            setCurrentAnnouncement(nextQueue[0]);
+        } else {
+            setCurrentAnnouncement(null);
+        }
+    };
 
     const allMenuItems = [
         {
@@ -56,6 +81,14 @@ export default function DashboardScreen({ navigation }: { navigation: any }) {
             target: "AddProduct",
             color: "#ff9ff3", // Pink
             roles: ['admin'] // ADMIN only
+        },
+        {
+            icon: "📢", // Icon for Announcements
+            title: "Gestión de Avisos",
+            subtitle: "Crear mensajes para encargados",
+            target: "AnnouncementsAdmin",
+            color: "#f1c40f", // Yellow/Gold
+            roles: ['admin']
         },
         {
             icon: "🗑️",
@@ -130,6 +163,40 @@ export default function DashboardScreen({ navigation }: { navigation: any }) {
                     </TouchableOpacity>
                 )}
             />
+
+            {/* Announcement Modal for Encargado */}
+            <Modal
+                transparent={true}
+                visible={!!currentAnnouncement && currentUser?.role === 'user'}
+                animationType="fade"
+                onRequestClose={() => { }} // Block back button closing
+            >
+                <View className="flex-1 bg-black/80 justify-center items-center p-6">
+                    <View className="bg-white w-full max-w-[350px] p-6 rounded-3xl items-center shadow-2xl">
+                        <Text className="text-5xl mb-4">📢</Text>
+                        <Text className="text-2xl font-bold text-[#333] mb-4 text-center">
+                            AVISO IMPORTANTE
+                        </Text>
+
+                        <View className="bg-[#fff9c4] p-4 rounded-xl w-full mb-6 border-l-4 border-[#f1c40f]">
+                            <Text className="text-lg text-[#333] text-center font-medium leading-6">
+                                {currentAnnouncement?.message}
+                            </Text>
+                        </View>
+
+                        <Text className="text-sm text-[#999] mb-6">
+                            {queue.length > 1 ? `Mensaje 1 de ${queue.length}` : 'Mensaje Final'}
+                        </Text>
+
+                        <TouchableOpacity
+                            className="bg-[#4ECDC4] w-full py-4 rounded-xl items-center shadow-md active:opacity-90"
+                            onPress={handleConfirmAnnouncement}
+                        >
+                            <Text className="text-white font-bold text-lg">ENTERADO / CONFIRMAR</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }

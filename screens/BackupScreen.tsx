@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, Platform, ActivityIndicator } from 'react-native';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
 import { useInventory } from '../context/InventoryContext';
@@ -25,20 +25,25 @@ export default function BackupScreen({ navigation }: { navigation: any }) {
                 document.body.removeChild(a);
                 Alert.alert("Éxito", "El respaldo se ha descargado correctamente.");
             } else {
-                const fileUri = ((FileSystem as any).documentDirectory || (FileSystem as any).cacheDirectory) + fileName;
+                // Use cacheDirectory for temporary sharing file
+                const fileUri = `${(FileSystem as any).cacheDirectory}${fileName}`;
+
                 await FileSystem.writeAsStringAsync(fileUri, backupData, {
                     encoding: 'utf8'
                 });
 
                 if (await Sharing.isAvailableAsync()) {
-                    await Sharing.shareAsync(fileUri);
+                    await Sharing.shareAsync(fileUri, {
+                        mimeType: 'application/json',
+                        dialogTitle: 'Guardar Respaldo'
+                    });
                 } else {
-                    Alert.alert("Información", `Archivo guardado en: ${fileUri}`);
+                    Alert.alert("Información", `El dispositivo no admite compartir archivos. Archivo guardado temporalmente en: ${fileUri}`);
                 }
             }
-        } catch (error) {
-            console.error(error);
-            Alert.alert("Error", "No se pudo generar el respaldo.");
+        } catch (error: any) {
+            console.error("Backup error:", error);
+            Alert.alert("Error al crear respaldo", error.message || "Ocurrió un error desconocido.");
         }
     };
 

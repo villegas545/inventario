@@ -16,30 +16,36 @@ export default function RestockScreen({ navigation }: { navigation: any }) {
         setIsEditMode(false);
     };
 
-    const filteredProducts = products.filter((p: any) =>
-        p.name.toLowerCase().includes(searchText.toLowerCase()) && p.isActive !== false
-    );
+    const filteredProducts = products
+        .filter((p: any) =>
+            p.name.toLowerCase().includes(searchText.toLowerCase()) && p.isActive !== false
+        )
+        .sort((a: any, b: any) => a.name.localeCompare(b.name));
 
-    const handleConfirmRestock = () => {
+    const handleConfirmRestock = async () => {
         const amount = parseInt(amountInput);
         if (isNaN(amount) || amount < 0) {
             Alert.alert("Error", "Ingresa una cantidad válida");
             return;
         }
 
-        if (isEditMode) {
-            editProductQuantity(selectedProduct.id, amount);
-            Alert.alert("¡Actualizado!", `El inventario de ${selectedProduct.name} se ajustó a ${amount} ${selectedProduct.unit}`);
-        } else {
-            if (amount <= 0) {
-                Alert.alert("Error", "La cantidad a agregar debe ser mayor a 0");
-                return;
+        try {
+            if (isEditMode) {
+                await editProductQuantity(selectedProduct.id, amount);
+                Alert.alert("¡Actualizado!", `El inventario de ${selectedProduct.name} se ajustó a ${amount} ${selectedProduct.unit}`);
+            } else {
+                if (amount <= 0) {
+                    Alert.alert("Error", "La cantidad a agregar debe ser mayor a 0");
+                    return;
+                }
+                await updateProductQuantity(selectedProduct.id, amount);
+                Alert.alert("¡Listo!", `Agregaste ${amount} ${selectedProduct.unit} de ${selectedProduct.name}`);
             }
-            updateProductQuantity(selectedProduct.id, amount);
-            Alert.alert("¡Listo!", `Agregaste ${amount} ${selectedProduct.unit} de ${selectedProduct.name}`);
+            setSelectedProduct(null);
+        } catch (error: any) {
+            Alert.alert("Error", error.message || "No se pudo actualizar el inventario. Intenta de nuevo.");
+            console.error(error);
         }
-
-        setSelectedProduct(null);
     };
 
     const renderItem = ({ item }: { item: any }) => (

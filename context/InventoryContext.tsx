@@ -48,10 +48,18 @@ interface User {
     password?: string;
 }
 
+export interface Announcement {
+    id: string;
+    message: string;
+    isActive: boolean;
+    timestamp: number;
+}
+
 const InventoryContext = createContext<any>(undefined);
 
 export function InventoryProvider({ children }: { children: React.ReactNode }) {
     const [products, setProducts] = useState<Product[]>([]);
+    const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -98,13 +106,28 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
             console.error("Error fetching products: ", error);
         });
 
+        const unsubscribeAnnouncements = onSnapshot(collection(db, 'announcements'), (snapshot) => {
+            const list: Announcement[] = [];
+            snapshot.forEach((doc) => {
+                list.push({ id: doc.id, ...doc.data() } as Announcement);
+            });
+            // Sort by timestamp desc
+            list.sort((a, b) => b.timestamp - a.timestamp);
+            setAnnouncements(list);
+        }, (error) => {
+            console.error("Error fetching announcements: ", error);
+        });
+
         // Check for persistent login
         checkLoginStatus();
 
         // Ensure users exist
         seedUsersIfNeeded();
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribe();
+            unsubscribeAnnouncements();
+        };
     }, []);
 
     const seedUsersIfNeeded = async () => {
@@ -166,16 +189,25 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
 
     // --- Actions ---
 
-    const updateProductQuantity = async (id: string, delta: number) => {
+    const updateProductQuantity = async (id: string, delta: number, sessionId?: string) => {
         const product = products.find(p => p.id === id);
-        if (!product) return;
+        if (!product) {
+            console.error(`Product with id ${id} not found in current state.`);
+            throw new Error("Producto no encontrado. Intenta recargar.");
+        }
 
-        const newQuantity = Math.max(0, product.quantity + delta);
+        const currentQty = Number(product.quantity || 0);
+        const changeAmount = Number(delta);
+        const newQuantity = Math.max(0, currentQty + changeAmount);
 
-        const historyItem = createHistoryItem(delta > 0 ? 'restock' : 'usage', {
-            amount: delta,
-            previous: product.quantity,
-            new: newQuantity
+        // Debug log
+        console.log(`Updating product ${product.name}: ${currentQty} -> ${newQuantity} (Delta: ${changeAmount})`);
+
+        const historyItem = createHistoryItem(changeAmount > 0 ? 'restock' : 'usage', {
+            amount: changeAmount,
+            previous: currentQty,
+            new: newQuantity,
+            sessionId
         });
 
         await updateProductHistory(id, { quantity: newQuantity }, historyItem);
@@ -278,7 +310,7 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
             let addCounter = 0;
 
             backupData.forEach((product) => {
-                const docRef = doc(collection(db, 'products')); // Generar nuevo ID o usar el del producto si se quisiera preservar, pero mejor nuevos IDs para evitar colisiones raras, aunque perdemos link si hay referencias externas.
+                const docRef = doc(collection(db, 'products')); // Generar nuevo ID o usar el del producto si se quisiera preservar
                 // En este caso, si el producto tiene ID en el JSON, lo ignoramos y dejamos que Firestore cree uno nuevo, O
                 // si queremos preservar IDs exactos para integridad histórica estricta, usaríamos set(doc(db, 'products', product.id), ...)
                 // Dado que es un "Restore", preservar IDs parece lo correcto.
@@ -308,6 +340,38 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
             throw e;
         } finally {
             setLoading(false);
+        }
+    };
+
+    // --- Announcement Actions ---
+    const addAnnouncement = async (message: string) => {
+        try {
+            await addDoc(collection(db, 'announcements'), {
+                message,
+                isActive: true,
+                timestamp: Date.now()
+            });
+        } catch (e) {
+            console.error("Error adding announcement:", e);
+            throw e;
+        }
+    };
+
+    const updateAnnouncement = async (id: string, updates: Partial<Announcement>) => {
+        try {
+            await updateDoc(doc(db, 'announcements', id), updates);
+        } catch (e) {
+            console.error("Error updating announcement:", e);
+            throw e;
+        }
+    };
+
+    const deleteAnnouncement = async (id: string) => {
+        try {
+            await deleteDoc(doc(db, 'announcements', id));
+        } catch (e) {
+            console.error("Error deleting announcement:", e);
+            throw e;
         }
     };
 
@@ -380,7 +444,8 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
                     const reverseDetails = detail.changes || [];
                     // Wait, let's define ensure we save meaningful details in saveJobLog.
                     // Assuming detail has { productId, delta }.
-                    const newQty = pData.quantity - (detail.delta || 0);
+                    const currentQty = Number(pData.quantity || 0);
+                    const newQty = currentQty - (detail.delta || 0);
 
                     batch.update(productRef, {
                         quantity: newQty < 0 ? 0 : newQty,
@@ -407,9 +472,24 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
         try {
             // Destructure to omit 'image' if it exists in the product object being added
             const { image, ...productWithoutImage } = product;
+
+            // Ensure quantity is a number
+            const initialQuantity = typeof productWithoutImage.quantity === 'string'
+                ? parseInt(productWithoutImage.quantity)
+                : productWithoutImage.quantity;
+
+            // Create initial history entry using helper for consistency
+            const initialHistoryItem = createHistoryItem('restock', {
+                amount: initialQuantity,
+                previous: 0,
+                new: initialQuantity,
+                sessionId: `initial_${Date.now()}`
+            });
+
             const docRef = await addDoc(collection(db, 'products'), {
                 ...productWithoutImage,
-                history: []
+                quantity: initialQuantity,
+                history: [initialHistoryItem]
             });
             return docRef.id;
         } catch (e) {
@@ -446,6 +526,19 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const loginAsGuest = async () => {
+        setLoading(true);
+        const guestUser: User = {
+            username: 'encargado',
+            name: 'Encargado',
+            role: 'user'
+        };
+        setCurrentUser(guestUser);
+        await AsyncStorage.setItem('inventory_user_session', JSON.stringify(guestUser));
+        setLoading(false);
+        return guestUser;
+    };
+
     const logout = async () => {
         setCurrentUser(null);
         await AsyncStorage.removeItem('inventory_user_session');
@@ -464,11 +557,16 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
             permanentDeleteProduct,
             restoreDatabase,
             login,
+            loginAsGuest,
             logout,
             loading,
             saveJobLog,
             getLastJob,
-            rollbackJob
+            rollbackJob,
+            announcements,
+            addAnnouncement,
+            updateAnnouncement,
+            deleteAnnouncement
         }}>
             {children}
         </InventoryContext.Provider>

@@ -16,9 +16,11 @@ export default function InventoryScreen({ navigation }: { navigation: any }) {
         // image: '' - Removed
     });
 
-    const filteredProducts = products.filter((p: any) =>
-        p.name.toLowerCase().includes(searchText.toLowerCase()) && p.isActive !== false
-    );
+    const filteredProducts = products
+        .filter((p: any) =>
+            p.name.toLowerCase().includes(searchText.toLowerCase()) && p.isActive !== false
+        )
+        .sort((a: any, b: any) => a.name.localeCompare(b.name));
 
     const handleEditStart = (product: any) => {
         setEditingProduct(product);
