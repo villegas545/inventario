@@ -22,7 +22,7 @@ export default function RestockScreen({ navigation }: { navigation: any }) {
         )
         .sort((a: any, b: any) => a.name.localeCompare(b.name));
 
-    const handleConfirmRestock = () => {
+    const handleConfirmRestock = async () => {
         // Use parseFloat instead of parseInt to allow decimals
         const amount = parseFloat(amountInput);
         if (isNaN(amount) || amount < 0) {
