@@ -19,7 +19,7 @@ export default function AddProductScreen({ navigation }: { navigation: any }) {
             return;
         }
 
-        const qty = parseInt(initialQty);
+        const qty = parseFloat(initialQty);
         if (isNaN(qty) || qty < 0) {
             Alert.alert("Error", "La cantidad inicial debe ser un número válido.");
             return;
@@ -94,9 +94,13 @@ export default function AddProductScreen({ navigation }: { navigation: any }) {
                 <TextInput
                     className="bg-white border border-[#ddd] rounded-xl p-4 text-base"
                     value={initialQty}
-                    onChangeText={(text) => setInitialQty(text.replace(/[^0-9]/g, ''))}
+                    onChangeText={(text) => {
+                        if (/^\d*\.?\d*$/.test(text)) {
+                            setInitialQty(text);
+                        }
+                    }}
                     placeholder="0"
-                    keyboardType="numeric"
+                    keyboardType="decimal-pad"
                 />
 
 
