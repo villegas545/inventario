@@ -21,7 +21,8 @@ export default function RestockScreen({ navigation }: { navigation: any }) {
     );
 
     const handleConfirmRestock = () => {
-        const amount = parseInt(amountInput);
+        // Use parseFloat instead of parseInt to allow decimals
+        const amount = parseFloat(amountInput);
         if (isNaN(amount) || amount < 0) {
             Alert.alert("Error", "Ingresa una cantidad válida");
             return;
@@ -48,8 +49,11 @@ export default function RestockScreen({ navigation }: { navigation: any }) {
             onPress={() => handleSelect(item)}
         >
 
-            <View className="flex-1">
-                <Text className="text-lg font-bold text-[#333]">{item.name}</Text>
+            <View className="flex-1 mr-2">
+                <Text className="text-lg font-bold text-[#333]" numberOfLines={1}>{item.name}</Text>
+                {item.description ? (
+                    <Text className="text-xs text-[#666] italic mb-1" numberOfLines={2}>{item.description}</Text>
+                ) : null}
                 <Text className="text-sm text-[#888]">Hay: {item.quantity} {item.unit}</Text>
             </View>
             <View className="bg-[#eafbf9] py-2 px-4 rounded-full">
@@ -126,9 +130,15 @@ export default function RestockScreen({ navigation }: { navigation: any }) {
                                 <TextInput
                                     className="w-full bg-[#f9f9f9] border border-[#ddd] rounded-xl p-4 text-xl text-center mb-6"
                                     value={amountInput}
-                                    onChangeText={(text) => setAmountInput(text.replace(/[^0-9]/g, ''))}
+                                    // Allow numbers and one decimal point
+                                    onChangeText={(text) => {
+                                        // Validar que sea número o punto decimal válido
+                                        if (/^\d*\.?\d*$/.test(text)) {
+                                            setAmountInput(text);
+                                        }
+                                    }}
                                     placeholder={isEditMode ? "Nueva cantidad total" : "Cantidad a agregar"}
-                                    keyboardType="numeric"
+                                    keyboardType="decimal-pad"
                                     autoFocus={true}
                                 />
 
