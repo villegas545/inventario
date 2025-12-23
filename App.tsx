@@ -14,6 +14,9 @@ import ProductHistoryScreen from './screens/ProductHistoryScreen';
 import AddProductScreen from './screens/AddProductScreen';
 import SummaryScreen from './screens/SummaryScreen';
 import InactiveProductsScreen from './screens/InactiveProductsScreen';
+import BackupScreen from './screens/BackupScreen';
+import LastJobScreen from './screens/LastJobScreen';
+import AnnouncementsAdminScreen from './screens/AnnouncementsAdminScreen';
 import { StatusBar } from 'expo-status-bar';
 import { View, Platform } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -57,6 +60,9 @@ export default function App() {
                   <Stack.Screen name="AddProduct" component={AddProductScreen} />
                   <Stack.Screen name="Summary" component={SummaryScreen} />
                   <Stack.Screen name="InactiveProducts" component={InactiveProductsScreen} />
+                  <Stack.Screen name="Backup" component={BackupScreen} />
+                  <Stack.Screen name="LastJob" component={LastJobScreen} />
+                  <Stack.Screen name="AnnouncementsAdmin" component={AnnouncementsAdminScreen} />
                 </Stack.Navigator>
               </NavigationContainer>
             </SafeAreaView>

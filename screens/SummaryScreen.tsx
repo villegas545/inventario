@@ -4,8 +4,8 @@ import { View, Text, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { useInventory } from '../context/InventoryContext';
 
 export default function SummaryScreen({ navigation, route }: { navigation: any, route: any }) {
-    const { logout } = useInventory();
-    const { sessionLog } = route.params || { sessionLog: [] };
+    const { logout, saveJobLog, currentUser } = useInventory();
+    const { sessionLog, sessionId } = route.params || { sessionLog: [] };
     const [modalVisible, setModalVisible] = useState(false);
 
     // Filter out skipped items just in case, though we only push actual changes
@@ -15,10 +15,24 @@ export default function SummaryScreen({ navigation, route }: { navigation: any, 
         setModalVisible(true);
     };
 
-    const handleFinalize = () => {
+    const handleFinalize = async () => {
+        if (changes.length > 0 && sessionId) {
+            await saveJobLog({
+                sessionId,
+                user: currentUser?.name || 'Desconocido',
+                role: currentUser?.role || 'user',
+                summary: changes.map((c: any) => `${c.productName}: ${c.action} ${c.amount}`),
+                details: changes.map((c: any) => ({
+                    productId: c.productId,
+                    delta: c.action === 'restocked' ? c.amount : -c.amount,
+                    changes: c.changes
+                }))
+            });
+        }
+
         setModalVisible(false);
         // Return to Dashboard 
-        navigation.navigate('Dashboard'); // Fixed navigation target to match stack name
+        navigation.navigate('Dashboard');
     };
 
     return (
@@ -73,8 +87,8 @@ export default function SummaryScreen({ navigation, route }: { navigation: any, 
                 visible={modalVisible}
                 onRequestClose={() => setModalVisible(false)}
             >
-                <View className="flex-1 justify-center items-center bg-black/50">
-                    <View className="m-5 bg-white rounded-2xl p-8 items-center share-sm w-[90%] max-w-[400px] shadow-lg">
+                <View className="flex-1 justify-center items-center bg-black/50 p-5">
+                    <View className="bg-white rounded-2xl p-8 items-center share-sm w-full max-w-[400px] shadow-lg">
                         <Text className="text-2xl font-bold mb-4 text-[#333]">¿Todo Correcto?</Text>
                         <Text className="text-lg mb-6 text-center text-[#555]">
                             Al confirmar, se cerrará tu sesión.

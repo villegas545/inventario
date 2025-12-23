@@ -16,9 +16,11 @@ export default function RestockScreen({ navigation }: { navigation: any }) {
         setIsEditMode(false);
     };
 
-    const filteredProducts = products.filter((p: any) =>
-        p.name.toLowerCase().includes(searchText.toLowerCase()) && p.isActive !== false
-    );
+    const filteredProducts = products
+        .filter((p: any) =>
+            p.name.toLowerCase().includes(searchText.toLowerCase()) && p.isActive !== false
+        )
+        .sort((a: any, b: any) => a.name.localeCompare(b.name));
 
     const handleConfirmRestock = () => {
         // Use parseFloat instead of parseInt to allow decimals
@@ -28,19 +30,23 @@ export default function RestockScreen({ navigation }: { navigation: any }) {
             return;
         }
 
-        if (isEditMode) {
-            editProductQuantity(selectedProduct.id, amount);
-            Alert.alert("¡Actualizado!", `El inventario de ${selectedProduct.name} se ajustó a ${amount} ${selectedProduct.unit}`);
-        } else {
-            if (amount <= 0) {
-                Alert.alert("Error", "La cantidad a agregar debe ser mayor a 0");
-                return;
+        try {
+            if (isEditMode) {
+                await editProductQuantity(selectedProduct.id, amount);
+                Alert.alert("¡Actualizado!", `El inventario de ${selectedProduct.name} se ajustó a ${amount} ${selectedProduct.unit}`);
+            } else {
+                if (amount <= 0) {
+                    Alert.alert("Error", "La cantidad a agregar debe ser mayor a 0");
+                    return;
+                }
+                await updateProductQuantity(selectedProduct.id, amount);
+                Alert.alert("¡Listo!", `Agregaste ${amount} ${selectedProduct.unit} de ${selectedProduct.name}`);
             }
-            updateProductQuantity(selectedProduct.id, amount);
-            Alert.alert("¡Listo!", `Agregaste ${amount} ${selectedProduct.unit} de ${selectedProduct.name}`);
+            setSelectedProduct(null);
+        } catch (error: any) {
+            Alert.alert("Error", error.message || "No se pudo actualizar el inventario. Intenta de nuevo.");
+            console.error(error);
         }
-
-        setSelectedProduct(null);
     };
 
     const renderItem = ({ item }: { item: any }) => (
@@ -98,9 +104,9 @@ export default function RestockScreen({ navigation }: { navigation: any }) {
             >
                 <KeyboardAvoidingView
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
-                    className="flex-1 bg-black/50 justify-center items-center"
+                    className="flex-1 bg-black/50 justify-center items-center p-5"
                 >
-                    <View className="bg-white w-[85%] max-w-[400px] rounded-2xl p-8 items-center shadow-lg">
+                    <View className="bg-white w-full max-w-[400px] rounded-2xl p-8 items-center shadow-lg">
                         {selectedProduct && (
                             <>
                                 <Text className="text-2xl font-bold text-[#333] mb-2.5 text-center">
