@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity, TextInput, Modal, ScrollView, Alert, KeyboardAvoidingView, Platform, ListRenderItem } from 'react-native';
+import { View, Text, FlatList, Image, TouchableOpacity, TextInput, Modal, ScrollView, Alert, KeyboardAvoidingView, Platform, ListRenderItem, Keyboard } from 'react-native';
 import { useInventory } from '../context/InventoryContext';
 
 export default function InventoryScreen({ navigation }: { navigation: any }) {
@@ -15,6 +15,7 @@ export default function InventoryScreen({ navigation }: { navigation: any }) {
         unit: '',
         // image: '' - Removed
     });
+    const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
 
     const filteredProducts = products
         .filter((p: any) =>
@@ -28,8 +29,8 @@ export default function InventoryScreen({ navigation }: { navigation: any }) {
             name: product.name,
             description: product.description || '',
             unit: product.unit,
-            // image: product.image - Removed
         });
+        setConfirmDeleteVisible(false); // Reset delete state
         setEditModalVisible(true);
     };
 
@@ -52,31 +53,19 @@ export default function InventoryScreen({ navigation }: { navigation: any }) {
         }
     };
 
-    const handleDelete = () => {
+    const confirmDelete = async () => {
         if (!editingProduct) return;
-
-        Alert.alert(
-            "Eliminar Producto",
-            "¿Estás seguro de que quieres eliminar este producto? Se ocultará del inventario pero el historial permanecerá.",
-            [
-                { text: "Cancelar", style: "cancel" },
-                {
-                    text: "Eliminar",
-                    style: "destructive",
-                    onPress: async () => {
-                        try {
-                            await deleteProduct(editingProduct.id);
-                            setEditModalVisible(false);
-                            setEditingProduct(null);
-                            Alert.alert("🗑️ Eliminado", "El producto ha sido eliminado del inventario activo.");
-                        } catch (error) {
-                            Alert.alert("❌ Error", "No se pudo eliminar el producto.");
-                            console.error(error);
-                        }
-                    }
-                }
-            ]
-        );
+        try {
+            console.log("Eliminando producto (confirmado):", editingProduct.id);
+            await deleteProduct(editingProduct.id);
+            setEditModalVisible(false);
+            setEditingProduct(null);
+            setConfirmDeleteVisible(false);
+            // Action is immediate visually
+        } catch (error) {
+            Alert.alert("❌ Error", "No se pudo eliminar el producto.");
+            console.error(error);
+        }
     };
 
     const renderItem: ListRenderItem<any> = ({ item }) => (
@@ -196,13 +185,34 @@ export default function InventoryScreen({ navigation }: { navigation: any }) {
                                 </TouchableOpacity>
                             </View>
 
-                            {currentUser?.role === 'admin' && (
-                                <TouchableOpacity
-                                    className="mt-5 p-4 bg-[#fff0f0] rounded-xl border border-[#ffcccc] items-center"
-                                    onPress={handleDelete}
-                                >
-                                    <Text className="text-[#FF6B6B] font-bold text-sm">🗑️ Eliminar Producto</Text>
-                                </TouchableOpacity>
+                            {confirmDeleteVisible ? (
+                                <View className="mt-5 bg-[#fff0f0] p-4 rounded-xl border border-[#ffcccc]">
+                                    <Text className="text-[#FF6B6B] font-bold text-center mb-3 text-lg">¿Eliminar Definitivamente?</Text>
+                                    <Text className="text-[#666] text-center mb-4 text-sm">Se ocultará del inventario activo.</Text>
+                                    <View className="flex-row gap-4">
+                                        <TouchableOpacity
+                                            className="flex-1 p-3 bg-white border border-[#ddd] rounded-xl items-center"
+                                            onPress={() => setConfirmDeleteVisible(false)}
+                                        >
+                                            <Text className="text-[#666] font-bold">Cancelar</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            className="flex-1 p-3 bg-[#FF6B6B] rounded-xl items-center"
+                                            onPress={confirmDelete}
+                                        >
+                                            <Text className="text-white font-bold">SÍ, ELIMINAR</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            ) : (
+                                currentUser?.role === 'admin' && (
+                                    <TouchableOpacity
+                                        className="mt-5 p-4 bg-[#fff0f0] rounded-xl border border-[#ffcccc] items-center"
+                                        onPress={() => setConfirmDeleteVisible(true)}
+                                    >
+                                        <Text className="text-[#FF6B6B] font-bold text-sm">🗑️ Eliminar Producto</Text>
+                                    </TouchableOpacity>
+                                )
                             )}
                         </View>
                     </ScrollView>

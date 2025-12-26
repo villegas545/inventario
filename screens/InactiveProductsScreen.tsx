@@ -42,10 +42,13 @@ export default function InactiveProductsScreen({ navigation }: { navigation: any
                     style: "destructive",
                     onPress: async () => {
                         try {
+                            console.log("Intentando eliminar producto:", product.id);
                             await permanentDeleteProduct(product.id);
-                            Alert.alert("Eliminado", "El producto ha sido borrado permanentemente.");
+                            // Alert might not show if component unmounts quickly, but logic should run.
+                            // We can use a small timeout or just trust the context update.
                         } catch (e) {
-                            Alert.alert("Error", "No se pudo eliminar el producto.");
+                            console.error("Error al eliminar:", e);
+                            Alert.alert("Error", "No se pudo eliminar el producto. Intenta de nuevo.");
                         }
                     }
                 }
